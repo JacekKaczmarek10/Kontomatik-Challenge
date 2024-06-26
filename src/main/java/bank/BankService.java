@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class PekaoService {
+public class BankService {
 
     private static final String PASSWORD_MASK_URL = "https://www.pekao24.pl/api/authentication/customer/logon/password-mask/get";
     private static final String LOGIN_URL = "https://www.pekao24.pl/api/authentication/customer/logon";
@@ -32,7 +32,7 @@ public class PekaoService {
     public void performLogin() throws IOException {
         loadProperties();
         String passwordMaskResponse = requestPasswordMask();
-        System.out.println("Password Mask Response: " + passwordMaskResponse);
+        System.out.println(STR."Password Mask Response: \{passwordMaskResponse}");
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
             login(maskedPassword);

@@ -10,23 +10,28 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.io.IOException;
+import java.lang.AutoCloseable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class PekaoServiceTest {
+public class BankServiceTest {
 
     @InjectMocks
     @Spy
-    private PekaoService pekaoService;
+    private BankService bankService;
 
     private final Gson gson = new Gson();
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
+        try (AutoCloseable closeable = MockitoAnnotations.openMocks(this)) {
+            // No additional setup required here
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Nested
@@ -34,50 +39,50 @@ public class PekaoServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doNothing().when(pekaoService).loadProperties();
-            doReturn("test").when(pekaoService).requestPasswordMask();
-            doReturn("test").when(pekaoService).parsePasswordMask(any());
-            doReturn("test").when(pekaoService).extractMaskedPassword(any());
-            doNothing().when(pekaoService).login(any());
+            doNothing().when(bankService).loadProperties();
+            doReturn("test").when(bankService).requestPasswordMask();
+            doReturn("parsedTest").when(bankService).parsePasswordMask(any());
+            doReturn("maskedTest").when(bankService).extractMaskedPassword(any());
+            doNothing().when(bankService).login(any());
         }
 
         @Test
         void shouldLoadProperties() throws IOException {
             callService();
 
-            verify(pekaoService).loadProperties();
+            verify(bankService).loadProperties();
         }
 
         @Test
         void shouldRequestPasswordMask() throws IOException {
             callService();
 
-            verify(pekaoService).requestPasswordMask();
+            verify(bankService).requestPasswordMask();
         }
 
         @Test
         void shouldParsePasswordMask() throws IOException {
             callService();
 
-            verify(pekaoService).parsePasswordMask(any());
+            verify(bankService).parsePasswordMask(any());
         }
 
         @Test
         void shouldExtractMaskedPassword() throws IOException {
             callService();
 
-            verify(pekaoService).extractMaskedPassword(any());
+            verify(bankService).extractMaskedPassword(any());
         }
 
         @Test
         void shouldLogin() throws IOException {
             callService();
 
-            verify(pekaoService).login(any());
+            verify(bankService).login(any());
         }
 
         private void callService() throws IOException {
-            pekaoService.performLogin();
+            bankService.performLogin();
         }
     }
 
@@ -86,26 +91,26 @@ public class PekaoServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("test").when(pekaoService).createPasswordMaskRequestBody();
-            doReturn("test").when(pekaoService).executePostRequest(any(), any());
+            doReturn("requestBodyTest").when(bankService).createPasswordMaskRequestBody();
+            doReturn("responseTest").when(bankService).executePostRequest(any(), any());
         }
 
         @Test
         void shouldCreatePasswordMaskRequestBody() throws IOException {
             callService();
 
-            verify(pekaoService).createPasswordMaskRequestBody();
+            verify(bankService).createPasswordMaskRequestBody();
         }
 
         @Test
         void shouldExecutePostRequest() throws IOException {
             callService();
 
-            verify(pekaoService).createPasswordMaskRequestBody();
+            verify(bankService).executePostRequest(any(), any());
         }
 
         private void callService() throws IOException {
-            pekaoService.requestPasswordMask();
+            bankService.requestPasswordMask();
         }
     }
 
@@ -114,7 +119,7 @@ public class PekaoServiceTest {
 
         @Test
         void shouldReturnJsonString() {
-            pekaoService.username = "test";
+            bankService.username = "test";
 
             final var passwordMask = callService();
 
@@ -123,7 +128,7 @@ public class PekaoServiceTest {
         }
 
         private String callService() {
-            return pekaoService.createPasswordMaskRequestBody();
+            return bankService.createPasswordMaskRequestBody();
         }
     }
 
@@ -132,13 +137,13 @@ public class PekaoServiceTest {
 
         @Test
         void shouldReturnPasswordMask() {
-            final var result = callService("{\"passwordMask\":\"test\"}");
+            final var result = callService("{\"passwordMask\":\"parsedTest\"}");
 
-            assertThat(result).isEqualTo("test");
+            assertThat(result).isEqualTo("parsedTest");
         }
 
         private String callService(String response) {
-            return pekaoService.parsePasswordMask(response);
+            return bankService.parsePasswordMask(response);
         }
     }
 
@@ -147,15 +152,15 @@ public class PekaoServiceTest {
 
         @Test
         void shouldReturnMaskedPassword() {
-            pekaoService.password = "password";
+            bankService.password = "password";
 
-            final var result = callService("10101001");
+            final var result = callService("01001010");
 
             assertEquals("pswd", result);
         }
 
         private String callService(String passwordMask) {
-            return pekaoService.extractMaskedPassword(passwordMask);
+            return bankService.extractMaskedPassword(passwordMask);
         }
     }
 
@@ -164,26 +169,26 @@ public class PekaoServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("test").when(pekaoService).createLoginRequestBody(any());
-            doReturn("test").when(pekaoService).executePostRequest(any(), any());
+            doReturn("loginRequestBodyTest").when(bankService).createLoginRequestBody(any());
+            doReturn("loginResponseTest").when(bankService).executePostRequest(any(), any());
         }
 
         @Test
-        void shouldCreateLoginRequestBodyTest() throws IOException {
-            callService("test");
+        void shouldCreateLoginRequestBody() throws IOException {
+            callService("parsedTest");
 
-            verify(pekaoService).createLoginRequestBody("test");
+            verify(bankService).createLoginRequestBody("parsedTest");
         }
 
         @Test
-        void shouldExecutePostRequestTest() throws IOException {
-            callService("test");
+        void shouldExecutePostRequest() throws IOException {
+            callService("parsedTest");
 
-            verify(pekaoService).executePostRequest(any(), any());
+            verify(bankService).executePostRequest(any(), any());
         }
 
         private void callService(String passwordMask) throws IOException {
-             pekaoService.login(passwordMask);
+            bankService.login(passwordMask);
         }
     }
 
@@ -192,17 +197,17 @@ public class PekaoServiceTest {
 
         @Test
         void shouldReturnJsonString() {
-            pekaoService.username = "test";
+            bankService.username = "test";
 
-            final var result = callService("test");
+            final var result = callService("maskedTest");
 
             final var jsonObject = gson.fromJson(result, JsonObject.class);
             assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
-            assertThat(jsonObject.get("password").getAsString()).isEqualTo("test");
+            assertThat(jsonObject.get("password").getAsString()).isEqualTo("maskedTest");
         }
 
         private String callService(String maskedPassword) {
-            return pekaoService.createLoginRequestBody(maskedPassword);
+            return bankService.createLoginRequestBody(maskedPassword);
         }
     }
 }
