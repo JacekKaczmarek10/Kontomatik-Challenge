@@ -1,4 +1,4 @@
-import org.example.PekaoService;
+import bank.PekaoService;
 
 import java.io.IOException;
 
