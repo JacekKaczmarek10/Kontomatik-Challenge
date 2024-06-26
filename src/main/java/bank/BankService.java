@@ -32,7 +32,7 @@ public class BankService {
     public void performLogin() throws IOException {
         loadProperties();
         String passwordMaskResponse = requestPasswordMask();
-        System.out.println(STR."Password Mask Response: \{passwordMaskResponse}");
+        System.out.println("Password Mask Response: " + passwordMaskResponse);
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
             login(maskedPassword);
