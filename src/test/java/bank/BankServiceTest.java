@@ -10,7 +10,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.io.IOException;
-import java.lang.AutoCloseable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,11 +26,7 @@ public class BankServiceTest {
 
     @BeforeEach
     public void setUp() {
-        try (AutoCloseable closeable = MockitoAnnotations.openMocks(this)) {
-            // No additional setup required here
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        MockitoAnnotations.openMocks(this);
     }
 
     @Nested
@@ -41,8 +36,8 @@ public class BankServiceTest {
         void setUp() throws IOException {
             doNothing().when(bankService).loadProperties();
             doReturn("test").when(bankService).requestPasswordMask();
-            doReturn("parsedTest").when(bankService).parsePasswordMask(any());
-            doReturn("maskedTest").when(bankService).extractMaskedPassword(any());
+            doReturn("test").when(bankService).parsePasswordMask(any());
+            doReturn("test").when(bankService).extractMaskedPassword(any());
             doNothing().when(bankService).login(any());
         }
 
@@ -91,8 +86,8 @@ public class BankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("requestBodyTest").when(bankService).createPasswordMaskRequestBody();
-            doReturn("responseTest").when(bankService).executePostRequest(any(), any());
+            doReturn("test").when(bankService).createPasswordMaskRequestBody();
+            doReturn("test").when(bankService).executePostRequest(any(), any());
         }
 
         @Test
@@ -106,7 +101,7 @@ public class BankServiceTest {
         void shouldExecutePostRequest() throws IOException {
             callService();
 
-            verify(bankService).executePostRequest(any(), any());
+            verify(bankService).createPasswordMaskRequestBody();
         }
 
         private void callService() throws IOException {
@@ -137,9 +132,9 @@ public class BankServiceTest {
 
         @Test
         void shouldReturnPasswordMask() {
-            final var result = callService("{\"passwordMask\":\"parsedTest\"}");
+            final var result = callService("{\"passwordMask\":\"test\"}");
 
-            assertThat(result).isEqualTo("parsedTest");
+            assertThat(result).isEqualTo("test");
         }
 
         private String callService(String response) {
@@ -154,7 +149,7 @@ public class BankServiceTest {
         void shouldReturnMaskedPassword() {
             bankService.password = "password";
 
-            final var result = callService("01001010");
+            final var result = callService("10101001");
 
             assertEquals("pswd", result);
         }
@@ -169,26 +164,26 @@ public class BankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("loginRequestBodyTest").when(bankService).createLoginRequestBody(any());
-            doReturn("loginResponseTest").when(bankService).executePostRequest(any(), any());
+            doReturn("test").when(bankService).createLoginRequestBody(any());
+            doReturn("test").when(bankService).executePostRequest(any(), any());
         }
 
         @Test
-        void shouldCreateLoginRequestBody() throws IOException {
-            callService("parsedTest");
+        void shouldCreateLoginRequestBodyTest() throws IOException {
+            callService("test");
 
-            verify(bankService).createLoginRequestBody("parsedTest");
+            verify(bankService).createLoginRequestBody("test");
         }
 
         @Test
-        void shouldExecutePostRequest() throws IOException {
-            callService("parsedTest");
+        void shouldExecutePostRequestTest() throws IOException {
+            callService("test");
 
             verify(bankService).executePostRequest(any(), any());
         }
 
         private void callService(String passwordMask) throws IOException {
-            bankService.login(passwordMask);
+             bankService.login(passwordMask);
         }
     }
 
@@ -199,11 +194,11 @@ public class BankServiceTest {
         void shouldReturnJsonString() {
             bankService.username = "test";
 
-            final var result = callService("maskedTest");
+            final var result = callService("test");
 
             final var jsonObject = gson.fromJson(result, JsonObject.class);
             assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
-            assertThat(jsonObject.get("password").getAsString()).isEqualTo("maskedTest");
+            assertThat(jsonObject.get("password").getAsString()).isEqualTo("test");
         }
 
         private String callService(String maskedPassword) {
