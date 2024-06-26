@@ -1,4 +1,4 @@
-package org.example;
+package bank;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -11,6 +11,7 @@ import org.mockito.Spy;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -20,6 +21,7 @@ public class PekaoServiceTest {
     @InjectMocks
     @Spy
     private PekaoService pekaoService;
+
     private final Gson gson = new Gson();
 
     @BeforeEach
@@ -41,7 +43,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldLoadProperties() throws IOException {
-
             callService();
 
             verify(pekaoService).loadProperties();
@@ -49,7 +50,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldRequestPasswordMask() throws IOException {
-
             callService();
 
             verify(pekaoService).requestPasswordMask();
@@ -57,7 +57,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldParsePasswordMask() throws IOException {
-
             callService();
 
             verify(pekaoService).parsePasswordMask(any());
@@ -65,7 +64,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldExtractMaskedPassword() throws IOException {
-
             callService();
 
             verify(pekaoService).extractMaskedPassword(any());
@@ -73,7 +71,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldLogin() throws IOException {
-
             callService();
 
             verify(pekaoService).login(any());
@@ -95,7 +92,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldCreatePasswordMaskRequestBody() throws IOException {
-
             callService();
 
             verify(pekaoService).createPasswordMaskRequestBody();
@@ -103,7 +99,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldExecutePostRequest() throws IOException {
-
             callService();
 
             verify(pekaoService).createPasswordMaskRequestBody();
@@ -121,10 +116,10 @@ public class PekaoServiceTest {
         void shouldReturnJsonString() {
             pekaoService.username = "test";
 
-            String result = callService();
+            final var passwordMask = callService();
 
-            JsonObject jsonObject = gson.fromJson(result, JsonObject.class);
-            assertEquals("test", jsonObject.get("customer").getAsString());
+            final var jsonObject = gson.fromJson(passwordMask, JsonObject.class);
+            assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
         }
 
         private String callService() {
@@ -137,10 +132,9 @@ public class PekaoServiceTest {
 
         @Test
         void shouldReturnPasswordMask() {
+            final var result = callService("{\"passwordMask\":\"test\"}");
 
-            String result = callService("{\"passwordMask\":\"test\"}");
-
-            assertEquals("test", result);
+            assertThat(result).isEqualTo("test");
         }
 
         private String callService(String response) {
@@ -155,7 +149,7 @@ public class PekaoServiceTest {
         void shouldReturnMaskedPassword() {
             pekaoService.password = "password";
 
-            String result = callService("10101001");
+            final var result = callService("10101001");
 
             assertEquals("pswd", result);
         }
@@ -176,7 +170,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldCreateLoginRequestBodyTest() throws IOException {
-
             callService("test");
 
             verify(pekaoService).createLoginRequestBody("test");
@@ -184,7 +177,6 @@ public class PekaoServiceTest {
 
         @Test
         void shouldExecutePostRequestTest() throws IOException {
-
             callService("test");
 
             verify(pekaoService).executePostRequest(any(), any());
@@ -202,11 +194,11 @@ public class PekaoServiceTest {
         void shouldReturnJsonString() {
             pekaoService.username = "test";
 
-            String result = callService("test");
+            final var result = callService("test");
 
-            JsonObject jsonObject = gson.fromJson(result, JsonObject.class);
-            assertEquals("test", jsonObject.get("customer").getAsString());
-            assertEquals("test", jsonObject.get("password").getAsString());
+            final var jsonObject = gson.fromJson(result, JsonObject.class);
+            assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
+            assertThat(jsonObject.get("password").getAsString()).isEqualTo("test");
         }
 
         private String callService(String maskedPassword) {
