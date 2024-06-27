@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class BankService {
@@ -31,7 +30,7 @@ public class BankService {
 
     public void performLogin() throws IOException {
         loadProperties();
-        String passwordMaskResponse = requestPasswordMask();
+        final var passwordMaskResponse = requestPasswordMask();
         System.out.println("Password Mask Response: " + passwordMaskResponse);
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
@@ -40,7 +39,7 @@ public class BankService {
     }
 
     protected void loadProperties() {
-        Properties properties = new Properties();
+        final var properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
                 System.err.println("Unable to find properties file.");
@@ -69,7 +68,7 @@ public class BankService {
     }
 
     protected String executePostRequest(String url, String json) throws IOException {
-        HttpPost postRequest = new HttpPost(url);
+        final var postRequest = new HttpPost(url);
         postRequest.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         postRequest.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 
@@ -79,20 +78,20 @@ public class BankService {
     }
 
     protected String createPasswordMaskRequestBody() {
-        Map<String, String> requestBody = new HashMap<>();
+        final var requestBody = new HashMap<>();
         requestBody.put("customer", username);
-        String passwordMaskRequestBody = gson.toJson(requestBody);
+        final var passwordMaskRequestBody = gson.toJson(requestBody);
         System.out.println("Password Mask Request: " + passwordMaskRequestBody);
         return passwordMaskRequestBody;
     }
 
     protected String parsePasswordMask(String response) {
-        JsonObject jsonResponse = gson.fromJson(response, JsonObject.class);
+        final var jsonResponse = gson.fromJson(response, JsonObject.class);
         return jsonResponse.get("passwordMask").getAsString();
     }
 
     protected String extractMaskedPassword(String passwordMask) {
-        StringBuilder maskedPassword = new StringBuilder();
+        final var maskedPassword = new StringBuilder();
         for (int i = 0; i < passwordMask.length(); i++) {
             if (passwordMask.charAt(i) == '1') {
                 maskedPassword.append(password.charAt(i));
@@ -102,15 +101,15 @@ public class BankService {
     }
 
     protected void login(String maskedPassword) throws IOException {
-        String loginResponse = executePostRequest(LOGIN_URL, createLoginRequestBody(maskedPassword));
+        final var loginResponse = executePostRequest(LOGIN_URL, createLoginRequestBody(maskedPassword));
         System.out.println("Login Response: " + loginResponse);
     }
 
     protected String createLoginRequestBody(String maskedPassword) {
-        Map<String, String> requestBody = new HashMap<>();
+        final var requestBody = new HashMap<>();
         requestBody.put("customer", username);
         requestBody.put("password", maskedPassword);
-        String loginRequest = gson.toJson(requestBody);
+        final var loginRequest = gson.toJson(requestBody);
         System.out.println("Login Response: " + loginRequest);
         return loginRequest;
     }
