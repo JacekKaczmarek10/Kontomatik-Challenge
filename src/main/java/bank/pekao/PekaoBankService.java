@@ -54,7 +54,7 @@ public class PekaoBankService {
         }
     }
 
-    private void validateProperties() {
+    void validateProperties() {
         if (username == null || username.isEmpty()) {
             System.err.println("Username is missing in the properties file.");
         }
