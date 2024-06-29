@@ -1,4 +1,4 @@
-package bank;
+package bank.pekao;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class BankService {
+public class PekaoBankService {
 
     private static final String PASSWORD_MASK_URL = "https://www.pekao24.pl/api/authentication/customer/logon/password-mask/get";
     private static final String LOGIN_URL = "https://www.pekao24.pl/api/authentication/customer/logon";

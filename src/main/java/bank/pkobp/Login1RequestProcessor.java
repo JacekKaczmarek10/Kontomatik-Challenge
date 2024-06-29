@@ -35,55 +35,38 @@ public class Login1RequestProcessor {
         addHeader("Sec-Ch-Ua", "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"\n");
     }
 
-    // Method to add a custom header
     public void addHeader(String key, String value) {
         this.headers.put(key, value);
     }
 
-    // Method to get headers
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    // Method to convert object to JSON string
     public String convertObjectToJson(LoginRequest loginRequest) throws JsonProcessingException {
         return objectMapper.writeValueAsString(loginRequest);
     }
 
-    // Method to parse JSON response to object
     public LoginResponse parseResponse(String jsonResponse, Header header) throws JsonProcessingException {
         LoginResponse loginResponse = objectMapper.readValue(jsonResponse, LoginResponse.class);
         loginResponse.setSessionUUID(header.getValue());
         return loginResponse;
     }
 
-    // Method to execute the HTTP POST request
     public LoginResponse executeRequest(LoginRequest loginRequest) throws IOException {
-        // Set headers
         setHeaders();
-
-        // Create HttpClient
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            // Create HttpPost request
-            HttpPost httpPost = new HttpPost(LOGIN_URL);
-
-            // Set headers
+            final var httpPost = new HttpPost(LOGIN_URL);
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 httpPost.setHeader(entry.getKey(), entry.getValue());
             }
 
-            // Set the request body
-            String json = convertObjectToJson(loginRequest);
-            StringEntity entity = new StringEntity(json);
+            final var json = convertObjectToJson(loginRequest);
+            final var entity = new StringEntity(json);
             httpPost.setEntity(entity);
 
-            // Execute the request
-            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-                // Get the response body
+            try (final var response = httpClient.execute(httpPost)) {
                 System.out.println("Status code: " + response.getStatusLine().getStatusCode());
-                String jsonResponse = EntityUtils.toString(response.getEntity());
+                final var jsonResponse = EntityUtils.toString(response.getEntity());
                 return parseResponse(jsonResponse, response.getFirstHeader("X-Session-Id"));
             }
         }
     }
+
 }

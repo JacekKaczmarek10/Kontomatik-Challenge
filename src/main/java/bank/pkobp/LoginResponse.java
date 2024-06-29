@@ -19,10 +19,6 @@ public class LoginResponse {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public String getFlowId() {
         return flowId;
     }

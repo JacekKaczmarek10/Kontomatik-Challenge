@@ -1,4 +1,4 @@
-package bank;
+package bank.pekao;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class BankServiceTest {
+public class PekaoBankServiceTest {
 
     @InjectMocks
     @Spy
-    private BankService bankService;
+    private PekaoBankService pekaoBankService;
 
     private final Gson gson = new Gson();
 
@@ -34,51 +34,58 @@ public class BankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doNothing().when(bankService).loadProperties();
-            doReturn("test").when(bankService).requestPasswordMask();
-            doReturn("test").when(bankService).parsePasswordMask(any());
-            doReturn("test").when(bankService).extractMaskedPassword(any());
-            doNothing().when(bankService).login(any());
+            doNothing().when(pekaoBankService).loadProperties();
+            doReturn("test").when(pekaoBankService).requestPasswordMask();
+            doReturn("test").when(pekaoBankService).parsePasswordMask(any());
+            doReturn("test").when(pekaoBankService).extractMaskedPassword(any());
+            doNothing().when(pekaoBankService).login(any());
         }
 
         @Test
         void shouldLoadProperties() throws IOException {
             callService();
 
-            verify(bankService).loadProperties();
+            verify(pekaoBankService).loadProperties();
         }
 
         @Test
         void shouldRequestPasswordMask() throws IOException {
             callService();
 
-            verify(bankService).requestPasswordMask();
+            verify(pekaoBankService).requestPasswordMask();
         }
 
         @Test
         void shouldParsePasswordMask() throws IOException {
             callService();
 
-            verify(bankService).parsePasswordMask(any());
+            verify(pekaoBankService).parsePasswordMask(any());
         }
 
         @Test
         void shouldExtractMaskedPassword() throws IOException {
             callService();
 
-            verify(bankService).extractMaskedPassword(any());
+            verify(pekaoBankService).extractMaskedPassword(any());
         }
 
         @Test
         void shouldLogin() throws IOException {
             callService();
 
-            verify(bankService).login(any());
+            verify(pekaoBankService).login(any());
         }
 
         private void callService() throws IOException {
-            bankService.performLogin();
+            pekaoBankService.performLogin();
         }
+    }
+
+    @Nested
+    class LoadPropertiesTest {
+
+
+
     }
 
     @Nested
@@ -86,26 +93,26 @@ public class BankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("test").when(bankService).createPasswordMaskRequestBody();
-            doReturn("test").when(bankService).executePostRequest(any(), any());
+            doReturn("test").when(pekaoBankService).createPasswordMaskRequestBody();
+            doReturn("test").when(pekaoBankService).executePostRequest(any(), any());
         }
 
         @Test
         void shouldCreatePasswordMaskRequestBody() throws IOException {
             callService();
 
-            verify(bankService).createPasswordMaskRequestBody();
+            verify(pekaoBankService).createPasswordMaskRequestBody();
         }
 
         @Test
         void shouldExecutePostRequest() throws IOException {
             callService();
 
-            verify(bankService).createPasswordMaskRequestBody();
+            verify(pekaoBankService).createPasswordMaskRequestBody();
         }
 
         private void callService() throws IOException {
-            bankService.requestPasswordMask();
+            pekaoBankService.requestPasswordMask();
         }
     }
 
@@ -114,7 +121,7 @@ public class BankServiceTest {
 
         @Test
         void shouldReturnJsonString() {
-            bankService.username = "test";
+            pekaoBankService.username = "test";
 
             final var passwordMask = callService();
 
@@ -123,7 +130,7 @@ public class BankServiceTest {
         }
 
         private String callService() {
-            return bankService.createPasswordMaskRequestBody();
+            return pekaoBankService.createPasswordMaskRequestBody();
         }
     }
 
@@ -138,7 +145,7 @@ public class BankServiceTest {
         }
 
         private String callService(String response) {
-            return bankService.parsePasswordMask(response);
+            return pekaoBankService.parsePasswordMask(response);
         }
     }
 
@@ -147,7 +154,7 @@ public class BankServiceTest {
 
         @Test
         void shouldReturnMaskedPassword() {
-            bankService.password = "password";
+            pekaoBankService.password = "password";
 
             final var result = callService("10101001");
 
@@ -155,7 +162,7 @@ public class BankServiceTest {
         }
 
         private String callService(String passwordMask) {
-            return bankService.extractMaskedPassword(passwordMask);
+            return pekaoBankService.extractMaskedPassword(passwordMask);
         }
     }
 
@@ -164,26 +171,26 @@ public class BankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            doReturn("test").when(bankService).createLoginRequestBody(any());
-            doReturn("test").when(bankService).executePostRequest(any(), any());
+            doReturn("test").when(pekaoBankService).createLoginRequestBody(any());
+            doReturn("test").when(pekaoBankService).executePostRequest(any(), any());
         }
 
         @Test
         void shouldCreateLoginRequestBodyTest() throws IOException {
             callService("test");
 
-            verify(bankService).createLoginRequestBody("test");
+            verify(pekaoBankService).createLoginRequestBody("test");
         }
 
         @Test
         void shouldExecutePostRequestTest() throws IOException {
             callService("test");
 
-            verify(bankService).executePostRequest(any(), any());
+            verify(pekaoBankService).executePostRequest(any(), any());
         }
 
         private void callService(String passwordMask) throws IOException {
-             bankService.login(passwordMask);
+             pekaoBankService.login(passwordMask);
         }
     }
 
@@ -192,7 +199,7 @@ public class BankServiceTest {
 
         @Test
         void shouldReturnJsonString() {
-            bankService.username = "test";
+            pekaoBankService.username = "test";
 
             final var result = callService("test");
 
@@ -202,7 +209,8 @@ public class BankServiceTest {
         }
 
         private String callService(String maskedPassword) {
-            return bankService.createLoginRequestBody(maskedPassword);
+            return pekaoBankService.createLoginRequestBody(maskedPassword);
         }
     }
+
 }

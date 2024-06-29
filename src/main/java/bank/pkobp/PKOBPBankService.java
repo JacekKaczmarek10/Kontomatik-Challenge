@@ -7,7 +7,7 @@ import java.util.Properties;
 public class PKOBPBankService {
 
     public void performLogin() throws IOException {
-        UserCredentials userCredentials = loadProperties();
+        final var userCredentials = loadProperties();
         LoginResponse loginResponse = login1(userCredentials);
         login2(userCredentials, loginResponse);
         getAccountsData(loginResponse);
@@ -41,19 +41,20 @@ public class PKOBPBankService {
     }
 
     protected LoginResponse login1(UserCredentials userCredentials) throws IOException {
-        LoginRequest loginRequest = new LoginRequest(userCredentials.getLogin());
-        Login1RequestProcessor login1RequestProcessor = new Login1RequestProcessor();
+        final var loginRequest = new LoginRequest(userCredentials.getLogin());
+        final var login1RequestProcessor = new Login1RequestProcessor();
         return login1RequestProcessor.executeRequest(loginRequest);
     }
 
     protected void login2(UserCredentials userCredentials, LoginResponse loginResponse) throws IOException {
-        LoginRequest2 loginRequest = new LoginRequest2(loginResponse, userCredentials.getPassword());
-        Login2RequestProcessor login2RequestProcessor = new Login2RequestProcessor(loginResponse);
+        final var loginRequest = new LoginRequest2(loginResponse, userCredentials.getPassword());
+        final var login2RequestProcessor = new Login2RequestProcessor(loginResponse);
         String response = login2RequestProcessor.executeRequest(loginRequest);
+        System.out.println(response);
     }
 
     protected void getAccountsData(LoginResponse loginResponse) throws IOException {
-        GetAccountsDataProcessor getAccountsDataProcessor = new GetAccountsDataProcessor(loginResponse);
+        final var getAccountsDataProcessor = new AccountDataProcessor(loginResponse);
         String response = getAccountsDataProcessor.executeRequest();
         System.out.println(response);
     }
