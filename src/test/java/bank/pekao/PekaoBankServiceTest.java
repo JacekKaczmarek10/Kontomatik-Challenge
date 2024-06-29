@@ -2,6 +2,11 @@ package bank.pekao;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,11 +27,20 @@ public class PekaoBankServiceTest {
     @Spy
     private PekaoBankService pekaoBankService;
 
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    private final PrintStream originalErr = System.err;
+
     private final Gson gson = new Gson();
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
+        System.setErr(new PrintStream(errContent));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        System.setErr(originalErr);
     }
 
     @Nested
@@ -82,9 +96,87 @@ public class PekaoBankServiceTest {
     }
 
     @Nested
-    class LoadPropertiesTest {
+    class LoadPropertiesTests {
 
+        @Test
+        void shouldLoadPropertiesSuccessfully() {
+            pekaoBankService.loadProperties();
 
+            assertThat(pekaoBankService.username).isEqualTo("usernamePlaceholder");
+            assertThat(pekaoBankService.password).isEqualTo("passwordPlaceholder");
+        }
+
+        @Test
+        void shouldCallValidatePropertiesTest() {
+            pekaoBankService.loadProperties();
+
+            verify(pekaoBankService).validateProperties();
+        }
+    }
+
+    @Nested
+    class ValidatePropertiesTest {
+
+        @Test
+        void shouldPrintErrorWhenUsernameIsMissing() {
+            pekaoBankService.username = null;
+            pekaoBankService.password = "testPassword";
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).contains("Username is missing in the properties file.");
+        }
+
+        @Test
+        void shouldPrintErrorWhenPasswordIsMissing() {
+            pekaoBankService.username = "testUsername";
+            pekaoBankService.password = null;
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).contains("Password is missing in the properties file.");
+        }
+
+        @Test
+        void shouldPrintBothErrorsWhenUsernameAndPasswordAreMissing() {
+            pekaoBankService.username = null;
+            pekaoBankService.password = null;
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).contains("Username is missing in the properties file.")
+                .contains("Password is missing in the properties file.");
+        }
+
+        @Test
+        void shouldNotPrintErrorWhenUsernameAndPasswordArePresent() {
+            pekaoBankService.username = "testUsername";
+            pekaoBankService.password = "testPassword";
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).isEmpty();
+        }
+
+        @Test
+        void shouldPrintErrorWhenUsernameIsEmpty() {
+            pekaoBankService.username = "";
+            pekaoBankService.password = "testPassword";
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).contains("Username is missing in the properties file.");
+        }
+
+        @Test
+        void shouldPrintErrorWhenPasswordIsEmpty() {
+            pekaoBankService.username = "testUsername";
+            pekaoBankService.password = "";
+
+            pekaoBankService.validateProperties();
+
+            assertThat(errContent.toString()).contains("Password is missing in the properties file.");
+        }
 
     }
 
