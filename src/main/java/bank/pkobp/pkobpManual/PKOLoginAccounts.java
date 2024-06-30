@@ -76,7 +76,6 @@ public class PKOLoginAccounts {
         if (responseData != null) {
             responseData.forEach(account -> {
                 System.out.println("    Name: " + account.getName());
-                System.out.println("    Number: " + account.getAccountNumber().getValue());
                 System.out.println("    Balance: " + account.getBalance());
                 System.out.println("    -------------------------");
             });
