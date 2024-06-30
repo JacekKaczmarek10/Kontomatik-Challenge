@@ -1,5 +1,7 @@
 package bank.pkobp;
 
+import static bank.pkobp.Login2RequestProcessor.getResponseAsString;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -7,11 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.apache.http.HttpHeaders;
-import org.apache.http.ParseException;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 public class AccountDataProcessor {
 
@@ -53,15 +52,7 @@ public class AccountDataProcessor {
             }
 
             final var json = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
-            final var entity = new StringEntity(json);
-            httpPost.setEntity(entity);
-
-            try (final var response = httpClient.execute(httpPost)) {
-                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
-                return EntityUtils.toString(response.getEntity());
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            return getResponseAsString(httpClient, httpPost, json);
         }
     }
 }
