@@ -92,6 +92,14 @@
           <target>22</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <mainClass>bank.pekao.PekaoBankApplication</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
