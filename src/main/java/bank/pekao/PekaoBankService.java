@@ -38,7 +38,7 @@ public class PekaoBankService {
         }
     }
 
-    protected void loadProperties() {
+    void loadProperties() {
         final var properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {

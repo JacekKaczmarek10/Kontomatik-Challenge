@@ -2,9 +2,7 @@ package bank.pekao;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,14 +21,13 @@ import static org.mockito.Mockito.*;
 
 public class PekaoBankServiceTest {
 
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    private final PrintStream originalErr = System.err;
+    private final Gson gson = new Gson();
+
     @InjectMocks
     @Spy
     private PekaoBankService pekaoBankService;
-
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-    private final PrintStream originalErr = System.err;
-
-    private final Gson gson = new Gson();
 
     @BeforeEach
     public void setUp() {
@@ -96,10 +93,10 @@ public class PekaoBankServiceTest {
     }
 
     @Nested
-    class LoadPropertiesTests {
+    class LoadPropertiesTest {
 
         @Test
-        void shouldLoadPropertiesSuccessfully() {
+        void shouldLoadProperties() {
             pekaoBankService.loadProperties();
 
             assertThat(pekaoBankService.username).isEqualTo("usernamePlaceholder");
@@ -107,7 +104,7 @@ public class PekaoBankServiceTest {
         }
 
         @Test
-        void shouldCallValidatePropertiesTest() {
+        void shouldCallValidateProperties() {
             pekaoBankService.loadProperties();
 
             verify(pekaoBankService).validateProperties();
@@ -206,6 +203,22 @@ public class PekaoBankServiceTest {
         private void callService() throws IOException {
             pekaoBankService.requestPasswordMask();
         }
+    }
+
+    @Nested
+    class ExecutePostRequestTest {
+
+        @Test
+        void shouldReturnResponse() throws IOException {
+            final var response = callService();
+
+            assertThat(response).isNotNull();
+        }
+
+        private String callService() throws IOException {
+            return pekaoBankService.executePostRequest("https://www.pekao24.pl/api/authentication/customer/logon","test");
+        }
+
     }
 
     @Nested
