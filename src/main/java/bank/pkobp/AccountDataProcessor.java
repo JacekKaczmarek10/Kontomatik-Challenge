@@ -47,7 +47,7 @@ public class AccountDataProcessor {
 
         try (final var httpClient = HttpClients.createDefault()) {
             final var httpPost = new HttpPost(INIT_URL);
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
+            for (final var entry : headers.entrySet()) {
                 httpPost.setHeader(entry.getKey(), entry.getValue());
             }
 

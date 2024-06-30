@@ -52,15 +52,15 @@ public class PKOLoginAccounts {
     }
 
     private static List<Account> parseResponse(String jsonResponse) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(jsonResponse);
+        final var mapper = new ObjectMapper();
+        final var jsonNode = mapper.readTree(jsonResponse);
 
-        JsonNode accountsNode = jsonNode.get("response").get("data").get("accounts");
+        final var accountsNode = jsonNode.get("response").get("data").get("accounts");
 
         List<Account> accountsList = new ArrayList<>();
 
-        for (JsonNode accountNode : accountsNode) {
-            Account account = mapper.convertValue(accountNode, Account.class);
+        for (final var accountNode : accountsNode) {
+            final var account = mapper.convertValue(accountNode, Account.class);
             accountsList.add(account);
         }
         return accountsList;

@@ -43,7 +43,7 @@ public class Login1RequestProcessor {
     }
 
     public LoginResponse parseResponse(String jsonResponse, Header header) throws JsonProcessingException {
-        LoginResponse loginResponse = objectMapper.readValue(jsonResponse, LoginResponse.class);
+        final var loginResponse = objectMapper.readValue(jsonResponse, LoginResponse.class);
         loginResponse.setSessionUUID(header.getValue());
         return loginResponse;
     }
