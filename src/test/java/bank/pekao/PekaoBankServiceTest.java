@@ -244,13 +244,13 @@ public class PekaoBankServiceTest {
 
         @Test
         void shouldReturnPasswordMask() {
-            final var result = callService("{\"passwordMask\":\"test\"}");
+            final var result = callService();
 
             assertThat(result).isEqualTo("test");
         }
 
-        private String callService(String response) {
-            return pekaoBankService.parsePasswordMask(response);
+        private String callService() {
+            return pekaoBankService.parsePasswordMask("{\"passwordMask\":\"test\"}");
         }
     }
 
@@ -261,13 +261,13 @@ public class PekaoBankServiceTest {
         void shouldReturnMaskedPassword() {
             pekaoBankService.password = "password";
 
-            final var result = callService("10101001");
+            final var result = callService();
 
             assertEquals("pswd", result);
         }
 
-        private String callService(String passwordMask) {
-            return pekaoBankService.extractMaskedPassword(passwordMask);
+        private String callService() {
+            return pekaoBankService.extractMaskedPassword("10101001");
         }
     }
 
@@ -282,20 +282,20 @@ public class PekaoBankServiceTest {
 
         @Test
         void shouldCreateLoginRequestBodyTest() throws IOException {
-            callService("test");
+            callService();
 
             verify(pekaoBankService).createLoginRequestBody("test");
         }
 
         @Test
         void shouldExecutePostRequestTest() throws IOException {
-            callService("test");
+            callService();
 
             verify(pekaoBankService).executePostRequest(any(), any());
         }
 
-        private void callService(String passwordMask) throws IOException {
-             pekaoBankService.login(passwordMask);
+        private void callService() throws IOException {
+             pekaoBankService.login("test");
         }
     }
 
@@ -306,15 +306,15 @@ public class PekaoBankServiceTest {
         void shouldReturnJsonString() {
             pekaoBankService.username = "test";
 
-            final var result = callService("test");
+            final var result = callService();
 
             final var jsonObject = gson.fromJson(result, JsonObject.class);
             assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
             assertThat(jsonObject.get("password").getAsString()).isEqualTo("test");
         }
 
-        private String callService(String maskedPassword) {
-            return pekaoBankService.createLoginRequestBody(maskedPassword);
+        private String callService() {
+            return pekaoBankService.createLoginRequestBody("test");
         }
     }
 
