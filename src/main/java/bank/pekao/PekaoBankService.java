@@ -72,7 +72,7 @@ public class PekaoBankService {
         postRequest.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         postRequest.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 
-        try (CloseableHttpResponse response = httpClient.execute(postRequest)) {
+        try (final var response = httpClient.execute(postRequest)) {
             return IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
         }
     }

@@ -9,7 +9,7 @@ public class PekaoBankApplication {
     private static final Logger logger = Logger.getLogger(PekaoBankApplication.class.getName());
 
     public static void main(String[] args) {
-        PekaoBankService scraper = new PekaoBankService();
+        final var scraper = new PekaoBankService();
         try {
             scraper.performLogin();
         } catch (IOException e) {
