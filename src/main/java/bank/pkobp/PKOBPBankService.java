@@ -58,8 +58,4 @@ public class PKOBPBankService {
         System.out.println(response);
     }
 
-    public static void main(String[] args) throws IOException {
-        final var pkobpBankService = new PKOBPBankService();
-        pkobpBankService.performLogin();
-    }
 }
