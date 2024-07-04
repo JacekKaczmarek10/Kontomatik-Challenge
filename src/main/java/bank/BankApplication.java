@@ -1,35 +1,47 @@
 package bank;
 
 import bank.pekao.PekaoBankService;
-import bank.pkobp.PKOBPBankService;
-import bank.pkobp.pkobpManual.PKOLoginAccounts;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import bank.pko.pkobp.PKOBPBankService;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+@Slf4j
 public class BankApplication {
 
-    private static final Logger logger = Logger.getLogger(BankApplication.class.getName());
+    public static void main(String[] args) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    public static void main(String[] args) throws IOException {
-        logger.log(Level.INFO, "START LOG IN PROCESS FOR PKO PB");
-        final var pkobpBankService = new PKOBPBankService();
-        pkobpBankService.performLogin();
-        logger.log(Level.INFO, "FINISH LOG IN PROCESS FOR PKO PB");
-
-        logger.log(Level.INFO, "START LOG IN PROCESS FOR PEKAO");
-        final var scraper = new PekaoBankService();
+        System.out.print("Choose your bank (PKO BP or PEKAO): ");
         try {
-            scraper.performLogin();
+            String bankChoice = reader.readLine().trim().toUpperCase();
+
+            if ("PKO BP".equals(bankChoice)) {
+                log.info("START LOG IN PROCESS FOR PKO PB");
+                PKOBPBankService pkobpBankService = new PKOBPBankService();
+                try {
+                    pkobpBankService.performLogin();
+                } catch (Exception e) {
+                    log.error("An exception occurred during login to PKO BP: {0}", e);
+                }
+                log.info("FINISH LOG IN PROCESS FOR PKO PB");
+            } else if ("PEKAO".equals(bankChoice)) {
+                log.info("START LOG IN PROCESS FOR PEKAO");
+                PekaoBankService pekaoBankService = new PekaoBankService();
+                try {
+                    pekaoBankService.performLogin();
+                } catch (IOException e) {
+                    log.error("An exception occurred during login to PEKAO: {0}", e);
+                }
+                log.info("FINISH LOG IN PROCESS FOR PEKAO");
+            } else {
+                log.error("Invalid bank choice: {}", bankChoice);
+            }
+
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "An exception occurred during login", e);
+            log.error("An error occurred while reading input: {0}", e);
         }
-        logger.log(Level.INFO, "FINISH LOG IN PROCESS FOR PEKAO");
-
-        logger.log(Level.INFO, "START LOG IN PROCESS FOR PKO PB");
-        final var pKOLoginAccounts = new PKOLoginAccounts();
-        pKOLoginAccounts.loginAndFetchAccounts();
-        logger.log(Level.INFO, "FINISH LOG IN PROCESS FOR PKO PB");
     }
-
 }
