@@ -27,7 +27,7 @@ public class PKOBPSignPipeline {
     }
 
     public List<Account> executePipeline() throws IOException, RequestProcessingException {
-        LoginResponse loginResponse = loginRequest();
+        var loginResponse = loginRequest();
         loginResponse = passwordRequest(loginResponse);
         otpRequest(readOTPFromUser(), loginResponse);
         return accountDataRequest();
@@ -35,31 +35,31 @@ public class PKOBPSignPipeline {
 
     private String readOTPFromUser() throws IOException {
         System.out.print("Enter OTP: ");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        final var reader = new BufferedReader(new InputStreamReader(System.in));
         return reader.readLine().trim();
     }
 
     protected LoginResponse loginRequest() throws IOException, RequestProcessingException {
-        LoginSubmitRequest loginSubmitRequest = new LoginSubmitRequest(userCredentials.login());
-        LoginSubmitRequestProcessor loginSubmitRequestProcessor = new LoginSubmitRequestProcessor();
+        final var loginSubmitRequest = new LoginSubmitRequest(userCredentials.login());
+        final var loginSubmitRequestProcessor = new LoginSubmitRequestProcessor();
         return loginSubmitRequestProcessor.executeRequest(loginSubmitRequest, new TypeReference<>() {});
     }
 
     protected LoginResponse passwordRequest(LoginResponse loginResponse) throws IOException, RequestProcessingException {
-        PasswordSubmitRequest loginRequest = new PasswordSubmitRequest(loginResponse, userCredentials.password());
-        PasswordSubmitRequestProcessor passwordSubmitRequestProcessor = new PasswordSubmitRequestProcessor();
+        final var loginRequest = new PasswordSubmitRequest(loginResponse, userCredentials.password());
+        final var passwordSubmitRequestProcessor = new PasswordSubmitRequestProcessor();
         return passwordSubmitRequestProcessor.executeRequest(loginRequest, new TypeReference<>() {});
     }
 
     protected void otpRequest(String otp, LoginResponse loginResponse) throws IOException, RequestProcessingException {
-        OTPSubmitRequest loginRequest = new OTPSubmitRequest(loginResponse, otp);
+        final var loginRequest = new OTPSubmitRequest(loginResponse, otp);
         OTPSubmitRequestProcessor otpSubmitRequestProcessor = new OTPSubmitRequestProcessor();
         otpSubmitRequestProcessor.executeRequest(loginRequest, new TypeReference<>() {});
     }
 
     protected List<Account> accountDataRequest() throws IOException, RequestProcessingException {
-        String json = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
-        GetAccountsInfoRequestProcessor getAccountsInfoRequestProcessor = new GetAccountsInfoRequestProcessor();
+        final var json = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+        final var getAccountsInfoRequestProcessor = new GetAccountsInfoRequestProcessor();
         return getAccountsInfoRequestProcessor.executeRequest(json, new TypeReference<>() {});
     }
 }
