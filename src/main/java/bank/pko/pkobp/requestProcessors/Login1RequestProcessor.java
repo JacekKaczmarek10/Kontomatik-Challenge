@@ -1,18 +1,22 @@
-package bank.pkobp;
+package bank.pko.pkobp.requestProcessors;
 
+import bank.pko.pkobp.LoginContext;
+import bank.pko.pkobp.entity.response.LoginResponse;
+import bank.pko.pkobp.entity.request.LoginSubmitRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
+import org.apache.http.auth.InvalidCredentialsException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import java.io.IOException;
-
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Login1RequestProcessor {
 
@@ -38,34 +42,35 @@ public class Login1RequestProcessor {
         this.headers.put(key, value);
     }
 
-    public String convertObjectToJson(LoginRequest loginRequest) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(loginRequest);
+    public String convertObjectToJson(LoginSubmitRequest loginSubmitRequest) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(loginSubmitRequest);
     }
 
-    public LoginResponse parseResponse(String jsonResponse, Header header) throws JsonProcessingException {
-        final var loginResponse = objectMapper.readValue(jsonResponse, LoginResponse.class);
-        loginResponse.setSessionUUID(header.getValue());
-        return loginResponse;
+    public LoginResponse parseResponse(String jsonResponse) throws JsonProcessingException {
+        return objectMapper.readValue(jsonResponse, LoginResponse.class);
     }
 
-    public LoginResponse executeRequest(LoginRequest loginRequest) throws IOException {
+    public LoginResponse executeRequest(LoginSubmitRequest loginSubmitRequest) throws IOException, InvalidCredentialsException {
         setHeaders();
+
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            final var httpPost = new HttpPost(LOGIN_URL);
+            HttpPost httpPost = new HttpPost(LOGIN_URL);
+
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 httpPost.setHeader(entry.getKey(), entry.getValue());
             }
 
-            final var json = convertObjectToJson(loginRequest);
-            final var entity = new StringEntity(json);
+            String json = convertObjectToJson(loginSubmitRequest);
+            StringEntity entity = new StringEntity(json);
             httpPost.setEntity(entity);
 
-            try (final var response = httpClient.execute(httpPost)) {
-                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
-                final var jsonResponse = EntityUtils.toString(response.getEntity());
-                return parseResponse(jsonResponse, response.getFirstHeader("X-Session-Id"));
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                String jsonResponse = EntityUtils.toString(response.getEntity());
+                LoginContext.getInstance().setSessionId(response.getFirstHeader("X-Session-Id").getValue());
+                return parseResponse(jsonResponse);
+            } catch (NullPointerException e){
+                throw new InvalidCredentialsException("Invalid user login");
             }
         }
     }
-
 }
