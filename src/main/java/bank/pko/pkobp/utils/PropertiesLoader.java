@@ -16,18 +16,18 @@ public class PropertiesLoader {
     private PropertiesLoader(){}
 
     public static UserCredentials loadProperties() {
-        try (InputStream input = PKOBPBankService.class.getClassLoader().getResourceAsStream("pkobp-config.properties")) {
+        try (final var input = PKOBPBankService.class.getClassLoader().getResourceAsStream("pkobp-config.properties")) {
             if (input == null) {
                 throw new FileNotFoundException("Unable to find properties file.");
             }
 
-            Properties properties = new Properties();
+            final var properties = new Properties();
             properties.load(input);
 
-            String login = Objects.requireNonNull(properties.getProperty("login"), "Login is missing or empty.");
-            String password = Objects.requireNonNull(properties.getProperty("password"), "Password is missing or empty.");
+            final var login = Objects.requireNonNull(properties.getProperty("login"), "Login is missing or empty.");
+            final var password = Objects.requireNonNull(properties.getProperty("password"), "Password is missing or empty.");
 
-            UserCredentials userCredentials = new UserCredentials(login.trim(), password.trim());
+            final var userCredentials = new UserCredentials(login.trim(), password.trim());
             validateProperties(userCredentials);
 
             return userCredentials;
