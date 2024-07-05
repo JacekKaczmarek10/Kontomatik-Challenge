@@ -20,7 +20,7 @@ public record PasswordSubmitRequest(
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static record Data(
+    public record Data(
             @JsonProperty("password") String password,
             @JsonProperty("placement") String placement,
             @JsonProperty("placement_page_no") Integer placementPageNo

@@ -14,7 +14,7 @@ public record LoginSubmitRequest(
         this(3, 0, "", "login", new Data(login), "submit");
     }
 
-    public static record Data(
+    public record Data(
             @JsonProperty("login") String login,
             @JsonProperty("fingerprint") String fingerprint
     ) {

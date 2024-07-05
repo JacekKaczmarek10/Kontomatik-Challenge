@@ -1,15 +1,15 @@
-package bank.pko.pkobp;
+package bank.pko.pkobp.context;
 
-public class LoginContext {
+public class SessionContext {
 
-    private static LoginContext instance;
+    private static SessionContext instance;
     private String sessionId;
 
-    private LoginContext() {}
+    private SessionContext() {}
 
-    public static synchronized LoginContext getInstance() {
+    public static synchronized SessionContext getInstance() {
         if (instance == null) {
-            instance = new LoginContext();
+            instance = new SessionContext();
         }
         return instance;
     }

@@ -19,7 +19,7 @@ public record OTPSubmitRequest(
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static record Data(
+    public record Data(
             @JsonProperty("otp") String otp
     ) {
     }
