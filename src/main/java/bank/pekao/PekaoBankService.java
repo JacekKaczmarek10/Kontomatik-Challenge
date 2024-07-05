@@ -39,7 +39,7 @@ public class PekaoBankService {
 
     void loadProperties() {
         final var properties = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("pekao-pekao-config.properties")) {
             if (input == null) {
                 System.err.println("Unable to find properties file.");
                 return;
