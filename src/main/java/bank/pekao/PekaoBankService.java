@@ -27,7 +27,7 @@ public class PekaoBankService {
     private final CloseableHttpClient httpClient = HttpClients.createDefault();
     private final Gson gson = new Gson();
 
-    public void performLogin() throws IOException {
+    public void loginAndGetAccountData() throws IOException {
         loadProperties();
         final var passwordMaskResponse = requestPasswordMask();
         System.out.println("Password Mask Response: " + passwordMaskResponse);
