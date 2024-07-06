@@ -1,6 +1,6 @@
-package bank.pko.pkobp.entity.request;
+package bank.pkobp.entity.request;
 
-import bank.pko.pkobp.entity.response.LoginResponse;
+import bank.pkobp.entity.response.LoginResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

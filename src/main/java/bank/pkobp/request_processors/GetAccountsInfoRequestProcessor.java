@@ -1,7 +1,7 @@
-package bank.pko.pkobp.request_processors;
+package bank.pkobp.request_processors;
 
-import bank.pko.pkobp.context.SessionContext;
-import bank.pko.pkobp.entity.Account;
+import bank.pkobp.context.SessionContext;
+import bank.pkobp.entity.Account;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

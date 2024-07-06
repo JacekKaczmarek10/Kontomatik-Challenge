@@ -1,4 +1,4 @@
-package bank.pko.pkobp.exception;
+package bank.pkobp.exception;
 
 public class InvalidCredentialsException extends RequestProcessingException{
 

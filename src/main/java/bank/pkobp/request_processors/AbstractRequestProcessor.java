@@ -1,6 +1,6 @@
-package bank.pko.pkobp.request_processors;
+package bank.pkobp.request_processors;
 
-import bank.pko.pkobp.exception.RequestProcessingException;
+import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

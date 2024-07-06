@@ -1,7 +1,7 @@
-package bank.pko.pkobp.utils;
+package bank.pkobp.utils;
 
-import bank.pko.pkobp.PKOBPBankService;
-import bank.pko.pkobp.entity.UserCredentials;
+import bank.pkobp.PKOBPBankService;
+import bank.pkobp.entity.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;

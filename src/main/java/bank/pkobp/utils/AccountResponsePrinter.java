@@ -1,6 +1,7 @@
-package bank.pko.pkobp.utils;
+package bank.pkobp.utils;
 
-import bank.pko.pkobp.entity.Account;
+import bank.pkobp.entity.Account;
+
 import java.util.List;
 
 public class AccountResponsePrinter {
