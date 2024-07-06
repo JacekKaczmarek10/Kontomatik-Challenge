@@ -1,6 +1,6 @@
 package bank.pkobp.entity.request;
 
-import bank.pkobp.entity.response.LoginResponse;
+import bank.pkobp.entity.response.AuthResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,8 +14,8 @@ public record PasswordSubmitRequest(
         @JsonProperty("data") Data data,
         @JsonProperty("action") String action
 ) {
-    public PasswordSubmitRequest(LoginResponse loginResponse, String password) {
-        this(3, 1, "", "password", loginResponse.flowId(), loginResponse.token(),
+    public PasswordSubmitRequest(AuthResponse authResponse, String password) {
+        this(3, 1, "", "password", authResponse.flowId(), authResponse.token(),
                 new Data(password, "LoginPKO", 1), "submit");
     }
 

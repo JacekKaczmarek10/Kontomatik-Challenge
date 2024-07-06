@@ -16,10 +16,8 @@ import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Properties;
 
 @Slf4j
 public class PekaoBankService implements BankService {
@@ -35,7 +33,7 @@ public class PekaoBankService implements BankService {
 
     @Override
     public void loginAndGetAccountData() throws IOException {
-        userCredentials = PropertiesLoader.loadProperties();
+        userCredentials = PropertiesLoader.loadProperties("pekao-config.properties");
 
         if (userCredentials == null){
             return;
@@ -49,11 +47,11 @@ public class PekaoBankService implements BankService {
         }
     }
 
-    protected String requestPasswordMask() throws IOException {
+    String requestPasswordMask() throws IOException {
         return executePostRequest(PASSWORD_MASK_URL, createPasswordMaskRequestBody());
     }
 
-    protected String executePostRequest(String url, String json) throws IOException {
+    String executePostRequest(String url, String json) throws IOException {
         final var postRequest = new HttpPost(url);
         postRequest.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         postRequest.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
@@ -63,7 +61,7 @@ public class PekaoBankService implements BankService {
         }
     }
 
-    protected String createPasswordMaskRequestBody() {
+    String createPasswordMaskRequestBody() {
         final var requestBody = new HashMap<>();
         requestBody.put("customer", userCredentials.login());
         final var passwordMaskRequestBody = gson.toJson(requestBody);
@@ -71,12 +69,12 @@ public class PekaoBankService implements BankService {
         return passwordMaskRequestBody;
     }
 
-    protected String parsePasswordMask(String response) {
+    String parsePasswordMask(String response) {
         final var jsonResponse = gson.fromJson(response, JsonObject.class);
         return jsonResponse.get("passwordMask").getAsString();
     }
 
-    protected String extractMaskedPassword(String passwordMask) {
+    String extractMaskedPassword(String passwordMask) {
         final var maskedPassword = new StringBuilder();
         for (int i = 0; i < passwordMask.length(); i++) {
             if (passwordMask.charAt(i) == '1') {
@@ -86,12 +84,12 @@ public class PekaoBankService implements BankService {
         return maskedPassword.toString();
     }
 
-    protected void login(String maskedPassword) throws IOException {
+    void login(String maskedPassword) throws IOException {
         final var loginResponse = executePostRequest(LOGIN_URL, createLoginRequestBody(maskedPassword));
         log.info("Login Response: {}", loginResponse);
     }
 
-    protected String createLoginRequestBody(String maskedPassword) {
+    String createLoginRequestBody(String maskedPassword) {
         final var requestBody = new HashMap<>();
         requestBody.put("customer", userCredentials.login());
         requestBody.put("password", maskedPassword);

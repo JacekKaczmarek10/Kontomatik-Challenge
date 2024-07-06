@@ -9,14 +9,24 @@ public class AccountResponsePrinter {
     private AccountResponsePrinter(){}
 
     public static void displayAccountDetails(List<Account> responseData) {
-        System.out.println("List accounts: ");
+        String accountsOutput = generateAccountDetails(responseData);
+        System.out.println(accountsOutput);
+    }
 
-        if (responseData != null) {
+    private static String generateAccountDetails(List<Account> responseData) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("List accounts:\n");
+
+        if (responseData != null && !responseData.isEmpty()) {
             responseData.forEach(account -> {
-                System.out.println("    Name: " + account.name());
-                System.out.println("    Balance: " + account.balance());
-                System.out.println("    -------------------------");
+                sb.append("    Name: ").append(account.name()).append("\n");
+                sb.append("    Balance: ").append(account.balance()).append("\n");
+                sb.append("    -------------------------\n");
             });
+        } else {
+            sb.append("    No accounts found\n");
         }
+
+        return sb.toString();
     }
 }

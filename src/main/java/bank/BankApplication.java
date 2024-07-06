@@ -21,5 +21,4 @@ public class BankApplication {
             log.error("An error occurred while reading input: {0}", e);
         }
     }
-
 }

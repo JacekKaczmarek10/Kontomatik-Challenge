@@ -2,11 +2,11 @@ package bank.pkobp.request_processors;
 
 import bank.pkobp.context.SessionContext;
 import bank.pkobp.entity.request.LoginSubmitRequest;
-import bank.pkobp.entity.response.LoginResponse;
+import bank.pkobp.entity.response.AuthResponse;
 import bank.pkobp.exception.InvalidCredentialsException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-public class LoginSubmitRequestProcessor extends AbstractRequestProcessor<LoginSubmitRequest, LoginResponse> {
+public class LoginSubmitRequestProcessor extends AbstractRequestProcessor<LoginSubmitRequest, AuthResponse> {
 
     public LoginSubmitRequestProcessor() {
         super();

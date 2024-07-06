@@ -10,15 +10,13 @@ import java.util.List;
 
 public class GetAccountsInfoRequestProcessor extends AbstractRequestProcessor<String, List<Account>> {
 
-    private static final String INIT_URL = "https://www.ipko.pl/ipko3/init";
-
     public GetAccountsInfoRequestProcessor() {
         super();
     }
 
     @Override
     protected String getUrl() {
-        return INIT_URL;
+        return "https://www.ipko.pl/ipko3/init";
     }
 
     @Override

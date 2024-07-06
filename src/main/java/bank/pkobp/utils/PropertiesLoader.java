@@ -1,6 +1,5 @@
 package bank.pkobp.utils;
 
-import bank.pkobp.service.PKOBPBankService;
 import bank.pkobp.entity.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,8 +13,12 @@ public class PropertiesLoader {
 
     private PropertiesLoader(){}
 
-    public static UserCredentials loadProperties() {
-        try (final var input = PKOBPBankService.class.getClassLoader().getResourceAsStream("pkobp-config.properties")) {
+    public static UserCredentials loadProperties(String propsFile) {
+        return loadProperties(propsFile, Thread.currentThread().getContextClassLoader());
+    }
+
+    public static UserCredentials loadProperties(String propsFile, ClassLoader classLoader) {
+        try (final var input = classLoader.getResourceAsStream(propsFile)) {
             if (input == null) {
                 throw new FileNotFoundException("Unable to find properties file.");
             }

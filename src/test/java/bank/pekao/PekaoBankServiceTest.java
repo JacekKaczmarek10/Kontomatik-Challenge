@@ -31,8 +31,12 @@ public class PekaoBankServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        System.setErr(new PrintStream(errContent));
+
+        try(var ignored = MockitoAnnotations.openMocks(this)){
+            System.setErr(new PrintStream(errContent));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterEach
@@ -45,8 +49,8 @@ public class PekaoBankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            try(MockedStatic<PropertiesLoader> mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
-                mockedStatic.when(PropertiesLoader::loadProperties).thenAnswer(invocation -> null);
+            try(MockedStatic<PropertiesLoader> mockedStatic = mockStatic(PropertiesLoader.class)) {
+                mockedStatic.when(() -> PropertiesLoader.loadProperties(any(String.class))).thenAnswer(invocation -> null);
                 doReturn("test").when(pekaoBankService).requestPasswordMask();
                 doReturn("test").when(pekaoBankService).parsePasswordMask(any());
                 doReturn("test").when(pekaoBankService).extractMaskedPassword(any());
@@ -58,7 +62,7 @@ public class PekaoBankServiceTest {
         void shouldLoadProperties() throws IOException {
             try(MockedStatic<PropertiesLoader> mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
                 callService();
-                mockedStatic.verify(PropertiesLoader::loadProperties);
+                mockedStatic.verify(() -> PropertiesLoader.loadProperties(any(String.class)));
             }
         }
 
@@ -95,91 +99,6 @@ public class PekaoBankServiceTest {
         }
     }
 
-//    @Nested
-//    class LoadPropertiesTest {
-//
-//        @Test
-//        void shouldLoadProperties() {
-//            pekaoBankService.loadProperties();
-//
-//            assertThat(pekaoBankService.username).isEqualTo("usernamePlaceholder");
-//            assertThat(pekaoBankService.password).isEqualTo("passwordPlaceholder");
-//        }
-//
-//        @Test
-//        void shouldCallValidateProperties() {
-//            pekaoBankService.loadProperties();
-//
-//            verify(pekaoBankService).validateProperties();
-//        }
-//    }
-//
-//    @Nested
-//    class ValidatePropertiesTest {
-//
-//        @Test
-//        void shouldPrintErrorWhenUsernameIsMissing() {
-//            pekaoBankService.username = null;
-//            pekaoBankService.password = "testPassword";
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).contains("Username is missing in the properties file.");
-//        }
-//
-//        @Test
-//        void shouldPrintErrorWhenPasswordIsMissing() {
-//            pekaoBankService.username = "testUsername";
-//            pekaoBankService.password = null;
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).contains("Password is missing in the properties file.");
-//        }
-//
-//        @Test
-//        void shouldPrintBothErrorsWhenUsernameAndPasswordAreMissing() {
-//            pekaoBankService.username = null;
-//            pekaoBankService.password = null;
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).contains("Username is missing in the properties file.")
-//                .contains("Password is missing in the properties file.");
-//        }
-//
-//        @Test
-//        void shouldNotPrintErrorWhenUsernameAndPasswordArePresent() {
-//            pekaoBankService.username = "testUsername";
-//            pekaoBankService.password = "testPassword";
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).isEmpty();
-//        }
-//
-//        @Test
-//        void shouldPrintErrorWhenUsernameIsEmpty() {
-//            pekaoBankService.username = "";
-//            pekaoBankService.password = "testPassword";
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).contains("Username is missing in the properties file.");
-//        }
-//
-//        @Test
-//        void shouldPrintErrorWhenPasswordIsEmpty() {
-//            pekaoBankService.username = "testUsername";
-//            pekaoBankService.password = "";
-//
-//            pekaoBankService.validateProperties();
-//
-//            assertThat(errContent.toString()).contains("Password is missing in the properties file.");
-//        }
-//
-//    }
-
     @Nested
     class RequestPasswordMaskTest {
 
@@ -200,7 +119,8 @@ public class PekaoBankServiceTest {
         void shouldExecutePostRequest() throws IOException {
             callService();
 
-            verify(pekaoBankService).createPasswordMaskRequestBody();
+            verify(pekaoBankService).executePostRequest(any(String.class), any(String.class));
+
         }
 
         private void callService() throws IOException {

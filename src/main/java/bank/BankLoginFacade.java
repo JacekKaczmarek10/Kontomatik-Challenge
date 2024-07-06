@@ -10,7 +10,7 @@ public class BankLoginFacade {
     private static final String PKOBP = "PKO BP";
     private static final String PEKAO = "PEKAO";
 
-    public void loginAndGetAccountData(String bankChoice) {
+    public void loginAndGetAccountData(final String bankChoice) {
         final var bankService = switch (bankChoice) {
             case PKOBP -> new PKOBPBankService();
             case PEKAO -> new PekaoBankService();
@@ -25,7 +25,7 @@ public class BankLoginFacade {
         loginAndGetAccountData(bankService, bankChoice);
     }
 
-    private void loginAndGetAccountData(BankService bankService, String bankName) {
+    private void loginAndGetAccountData(final BankService bankService, final String bankName) {
         log.info("START LOG IN PROCESS FOR {}", bankName);
         try {
             bankService.loginAndGetAccountData();
