@@ -1,7 +1,7 @@
-package bank.pko.pkobp.request_pipelines;
+package bank.pkobp.request_pipelines;
 
-import bank.pko.pkobp.exception.RequestProcessingException;
-import bank.pko.pkobp.request_processors.AbstractRequestProcessor;
+import bank.pkobp.exception.RequestProcessingException;
+import bank.pkobp.request_processors.AbstractRequestProcessor;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.IOException;

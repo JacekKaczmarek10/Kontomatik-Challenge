@@ -1,8 +1,8 @@
-package bank.pko.pkobp.request_processors;
+package bank.pkobp.request_processors;
 
-import bank.pko.pkobp.context.SessionContext;
-import bank.pko.pkobp.entity.request.OTPSubmitRequest;
-import bank.pko.pkobp.entity.response.LoginResponse;
+import bank.pkobp.context.SessionContext;
+import bank.pkobp.entity.request.OTPSubmitRequest;
+import bank.pkobp.entity.response.LoginResponse;
 
 public class OTPSubmitRequestProcessor extends AbstractRequestProcessor<OTPSubmitRequest, LoginResponse> {
 

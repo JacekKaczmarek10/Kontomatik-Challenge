@@ -1,4 +1,4 @@
-package bank.pko.pkobp.context;
+package bank.pkobp.context;
 
 public class SessionContext {
 

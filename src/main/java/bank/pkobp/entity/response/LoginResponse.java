@@ -1,4 +1,4 @@
-package bank.pko.pkobp.entity.response;
+package bank.pkobp.entity.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

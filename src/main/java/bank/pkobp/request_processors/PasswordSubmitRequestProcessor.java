@@ -1,8 +1,8 @@
-package bank.pko.pkobp.request_processors;
+package bank.pkobp.request_processors;
 
-import bank.pko.pkobp.context.SessionContext;
-import bank.pko.pkobp.entity.request.PasswordSubmitRequest;
-import bank.pko.pkobp.entity.response.LoginResponse;
+import bank.pkobp.context.SessionContext;
+import bank.pkobp.entity.request.PasswordSubmitRequest;
+import bank.pkobp.entity.response.LoginResponse;
 
 public class PasswordSubmitRequestProcessor extends AbstractRequestProcessor<PasswordSubmitRequest, LoginResponse> {
 
