@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM maven:3.9.8-eclipse-temurin-22-alpine AS build
+FROM maven:3.9.8-eclipse-temurin-21-alpine AS build
 
 # Set the working directory in the container
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Stage 2: Runtime stage
-FROM eclipse-temurin:22-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 # Set the working directory in the container
 WORKDIR /app

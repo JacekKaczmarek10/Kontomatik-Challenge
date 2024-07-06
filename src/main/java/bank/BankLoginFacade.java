@@ -1,10 +1,9 @@
 package bank;
 
 import bank.pekao.PekaoBankService;
-import bank.pkobp.PKOBPBankService;
+import bank.pkobp.service.BankService;
+import bank.pkobp.service.PKOBPBankService;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
 
 @Slf4j
 public class BankLoginFacade {
@@ -12,34 +11,28 @@ public class BankLoginFacade {
     private static final String PEKAO = "PEKAO";
 
     public void loginAndGetAccountData(String bankChoice) {
-        if (PKOBP.equals(bankChoice)) {
-            loginAndGetAccountDataPKOBP();
-        } else if (PEKAO.equals(bankChoice)) {
-            loginAndGetAccountDataPekao();
-        } else {
-            log.error("Invalid bank choice: {}", bankChoice);
+        BankService bankService;
+        switch (bankChoice) {
+            case PKOBP:
+                bankService = new PKOBPBankService();
+                break;
+            case PEKAO:
+                bankService = new PekaoBankService();
+                break;
+            default:
+                log.error("Invalid bank choice: {}", bankChoice);
+                return;
         }
+        loginAndGetAccountData(bankService, bankChoice);
     }
 
-    private void loginAndGetAccountDataPKOBP() {
-        log.info("START LOG IN PROCESS FOR " + PKOBP);
-        final var pkobpBankService = new PKOBPBankService();
+    private void loginAndGetAccountData(BankService bankService, String bankName) {
+        log.info("START LOG IN PROCESS FOR {}", bankName);
         try {
-            pkobpBankService.loginAndGetAccountData();
+            bankService.loginAndGetAccountData();
         } catch (Exception e) {
-            log.error("An exception occurred during login to " + PKOBP + ": {0}", e);
+            log.error("An exception occurred during login to {}: {}", bankName, e.getMessage(), e);
         }
-        log.info("FINISH LOG IN PROCESS FOR " + PKOBP);
-    }
-
-    private void loginAndGetAccountDataPekao() {
-        log.info("START LOG IN PROCESS FOR " + PEKAO);
-        final var pekaoBankService = new PekaoBankService();
-        try {
-            pekaoBankService.loginAndGetAccountData();
-        } catch (IOException e) {
-            log.error("An exception occurred during login to " + PEKAO + ": {0}", e);
-        }
-        log.info("FINISH LOG IN PROCESS FOR " + PEKAO);
+        log.info("FINISH LOG IN PROCESS FOR {}", bankName);
     }
 }
