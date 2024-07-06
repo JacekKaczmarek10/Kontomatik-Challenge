@@ -12,8 +12,8 @@ public class BankLoginFacade {
 
     public void loginAndGetAccountData(String bankChoice) {
         final var bankService = switch (bankChoice) {
-            case "PKOBP" -> new PKOBPBankService();
-            case "PEKAO" -> new PekaoBankService();
+            case PKOBP -> new PKOBPBankService();
+            case PEKAO -> new PekaoBankService();
             default -> {
                 log.error("Invalid bank choice: {}", bankChoice);
                 yield null;
