@@ -1,7 +1,12 @@
 package bank.pekao;
 
+import bank.pkobp.entity.UserCredentials;
+import bank.pkobp.service.BankService;
+import bank.pkobp.utils.PropertiesLoader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -16,49 +21,31 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class PekaoBankService {
+@Slf4j
+public class PekaoBankService implements BankService {
 
     private static final String PASSWORD_MASK_URL = "https://www.pekao24.pl/api/authentication/customer/logon/password-mask/get";
     private static final String LOGIN_URL = "https://www.pekao24.pl/api/authentication/customer/logon";
 
-    String username;
-    String password;
+    @Setter
+    private UserCredentials userCredentials;
 
     private final CloseableHttpClient httpClient = HttpClients.createDefault();
     private final Gson gson = new Gson();
 
+    @Override
     public void loginAndGetAccountData() throws IOException {
-        loadProperties();
+        userCredentials = PropertiesLoader.loadProperties();
+
+        if (userCredentials == null){
+            return;
+        }
+
         final var passwordMaskResponse = requestPasswordMask();
-        System.out.println("Password Mask Response: " + passwordMaskResponse);
+        log.info("Password Mask Response: {}", passwordMaskResponse);
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
             login(maskedPassword);
-        }
-    }
-
-    void loadProperties() {
-        final var properties = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("pekao-pekao-config.properties")) {
-            if (input == null) {
-                System.err.println("Unable to find properties file.");
-                return;
-            }
-            properties.load(input);
-            username = properties.getProperty("username");
-            password = properties.getProperty("password");
-            validateProperties();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    void validateProperties() {
-        if (username == null || username.isEmpty()) {
-            System.err.println("Username is missing in the properties file.");
-        }
-        if (password == null || password.isEmpty()) {
-            System.err.println("Password is missing in the properties file.");
         }
     }
 
@@ -78,9 +65,9 @@ public class PekaoBankService {
 
     protected String createPasswordMaskRequestBody() {
         final var requestBody = new HashMap<>();
-        requestBody.put("customer", username);
+        requestBody.put("customer", userCredentials.login());
         final var passwordMaskRequestBody = gson.toJson(requestBody);
-        System.out.println("Password Mask Request: " + passwordMaskRequestBody);
+        log.info("Password Mask Request: {}", passwordMaskRequestBody);
         return passwordMaskRequestBody;
     }
 
@@ -93,7 +80,7 @@ public class PekaoBankService {
         final var maskedPassword = new StringBuilder();
         for (int i = 0; i < passwordMask.length(); i++) {
             if (passwordMask.charAt(i) == '1') {
-                maskedPassword.append(password.charAt(i));
+                maskedPassword.append(userCredentials.password().charAt(i));
             }
         }
         return maskedPassword.toString();
@@ -101,15 +88,15 @@ public class PekaoBankService {
 
     protected void login(String maskedPassword) throws IOException {
         final var loginResponse = executePostRequest(LOGIN_URL, createLoginRequestBody(maskedPassword));
-        System.out.println("Login Response: " + loginResponse);
+        log.info("Login Response: {}", loginResponse);
     }
 
     protected String createLoginRequestBody(String maskedPassword) {
         final var requestBody = new HashMap<>();
-        requestBody.put("customer", username);
+        requestBody.put("customer", userCredentials.login());
         requestBody.put("password", maskedPassword);
         final var loginRequest = gson.toJson(requestBody);
-        System.out.println("Login Response: " + loginRequest);
+        log.info("Login Response : {}", loginRequest);
         return loginRequest;
     }
 }
