@@ -11,17 +11,16 @@ public class BankLoginFacade {
     private static final String PEKAO = "PEKAO";
 
     public void loginAndGetAccountData(String bankChoice) {
-        BankService bankService;
-        switch (bankChoice) {
-            case PKOBP:
-                bankService = new PKOBPBankService();
-                break;
-            case PEKAO:
-                bankService = new PekaoBankService();
-                break;
-            default:
+        final var bankService = switch (bankChoice) {
+            case "PKOBP" -> new PKOBPBankService();
+            case "PEKAO" -> new PekaoBankService();
+            default -> {
                 log.error("Invalid bank choice: {}", bankChoice);
-                return;
+                yield null;
+            }
+        };
+        if (bankService == null) {
+            return;
         }
         loginAndGetAccountData(bankService, bankChoice);
     }
