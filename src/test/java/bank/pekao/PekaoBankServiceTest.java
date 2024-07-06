@@ -88,7 +88,7 @@ public class PekaoBankServiceTest {
         }
 
         private void callService() throws IOException {
-            pekaoBankService.performLogin();
+            pekaoBankService.loginAndGetAccountData();
         }
     }
 

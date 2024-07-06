@@ -16,7 +16,7 @@ public class BankApplication {
         System.out.print("Choose your bank (PKO BP or PEKAO): ");
         try {
             final var bankChoice = reader.readLine().trim().toUpperCase();
-            bankLoginFacade.loginToBank(bankChoice);
+            bankLoginFacade.loginAndGetAccountData(bankChoice);
         } catch (IOException e) {
             log.error("An error occurred while reading input: {0}", e);
         }
