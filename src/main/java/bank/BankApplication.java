@@ -1,7 +1,5 @@
 package bank;
 
-import bank.pekao.PekaoBankService;
-import bank.pkobp.PKOBPBankService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -13,35 +11,15 @@ public class BankApplication {
 
     public static void main(String[] args) {
         final var reader = new BufferedReader(new InputStreamReader(System.in));
+        final var bankLoginFacade = new BankLoginFacade();
 
         System.out.print("Choose your bank (PKO BP or PEKAO): ");
         try {
             final var bankChoice = reader.readLine().trim().toUpperCase();
-
-            if ("PKO BP".equals(bankChoice)) {
-                log.info("START LOG IN PROCESS FOR PKO PB");
-                final var pkobpBankService = new PKOBPBankService();
-                try {
-                    pkobpBankService.performLogin();
-                } catch (Exception e) {
-                    log.error("An exception occurred during login to PKO BP: {0}", e);
-                }
-                log.info("FINISH LOG IN PROCESS FOR PKO PB");
-            } else if ("PEKAO".equals(bankChoice)) {
-                log.info("START LOG IN PROCESS FOR PEKAO");
-                final var pekaoBankService = new PekaoBankService();
-                try {
-                    pekaoBankService.performLogin();
-                } catch (IOException e) {
-                    log.error("An exception occurred during login to PEKAO: {0}", e);
-                }
-                log.info("FINISH LOG IN PROCESS FOR PEKAO");
-            } else {
-                log.error("Invalid bank choice: {}", bankChoice);
-            }
-
+            bankLoginFacade.loginToBank(bankChoice);
         } catch (IOException e) {
             log.error("An error occurred while reading input: {0}", e);
         }
     }
+
 }
