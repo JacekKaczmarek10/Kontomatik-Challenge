@@ -1,6 +1,6 @@
 package bank.pkobp.utils;
 
-import bank.pkobp.PKOBPBankService;
+import bank.pkobp.service.PKOBPBankService;
 import bank.pkobp.entity.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
 
