@@ -2,15 +2,12 @@ package bank;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 import java.io.*;
-import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BankApplicationTest {
 
@@ -32,88 +29,42 @@ class BankApplicationTest {
         System.setOut(systemOut);
     }
 
-    @Test
-    void testBankApplicationWithValidInputPKOBP() {
-        // Simulate user input "PKOBP"
-        testIn = new ByteArrayInputStream("PKOBP\n".getBytes());
-        System.setIn(testIn);
+    @Nested
+    class MainTest {
 
-        // Run BankApplication.main() and capture console output
-        BankApplication.main(new String[]{});
+        @Test
+        void shouldBankApplicationWithValidInputPKOBP() {
+            testIn = new ByteArrayInputStream("PKO BP\n".getBytes());
+            System.setIn(testIn);
+            BankApplication.main(new String[]{});
 
-        // Verify the output
-        String output = testOut.toString();
-        assertTrue(output.contains("START LOG IN PROCESS FOR PKOBP"));
-        assertTrue(output.contains("FINISH LOG IN PROCESS FOR PKOBP"));
+            final var output = testOut.toString();
 
-        // Reset System.in for subsequent tests
-        System.setIn(systemIn);
+            assertThat(output).contains("START LOG IN PROCESS FOR PKO BP");
+            assertThat(output).contains("FINISH LOG IN PROCESS FOR PKO BP");
+        }
+
+        @Test
+        void shouldBankApplicationWithValidInputPEKAO() {
+            testIn = new ByteArrayInputStream("PEKAO\n".getBytes());
+            System.setIn(testIn);
+            BankApplication.main(new String[]{});
+
+            final var output = testOut.toString();
+
+            assertThat(output).contains("START LOG IN PROCESS FOR PEKAO");
+            assertThat(output).contains("FINISH LOG IN PROCESS FOR PEKAO");
+        }
+
+        @Test
+        void shouldBankApplicationWithInvalidInput() {
+            testIn = new ByteArrayInputStream("InvalidBank\n".getBytes());
+            System.setIn(testIn);
+            BankApplication.main(new String[]{});
+
+            final var output = testOut.toString();
+
+            assertThat(output).contains("Invalid bank choice: INVALIDBANK");
+        }
     }
-
-    @Test
-    void testBankApplicationWithValidInputPEKAO() {
-        // Simulate user input "PEKAO"
-        testIn = new ByteArrayInputStream("PEKAO\n".getBytes());
-        System.setIn(testIn);
-
-        // Run BankApplication.main() and capture console output
-        BankApplication.main(new String[]{});
-
-        // Verify the output
-        String output = testOut.toString();
-        assertTrue(output.contains("START LOG IN PROCESS FOR PEKAO"));
-        assertTrue(output.contains("FINISH LOG IN PROCESS FOR PEKAO"));
-
-        // Reset System.in for subsequent tests
-        System.setIn(systemIn);
-    }
-
-    @Test
-    void testBankApplicationWithInvalidInput() {
-        // Simulate user input "InvalidBank"
-        testIn = new ByteArrayInputStream("InvalidBank\n".getBytes());
-        System.setIn(testIn);
-
-        // Run BankApplication.main() and capture console output
-        BankApplication.main(new String[]{});
-
-        // Verify the output
-        String output = testOut.toString();
-        assertTrue(output.contains("Invalid bank choice: INVALIDBANK"));
-
-        // Reset System.in for subsequent tests
-        System.setIn(systemIn);
-    }
-
-//    @Mock
-//    private BufferedReader mockReader;
-//
-//    @Mock
-//    private BankLoginFacade mockBankLoginFacade;
-//
-//    @InjectMocks
-//    private BankApplication bankApplication;
-//
-//    @Mock
-//    private Logger mockLogger;
-//
-//    @BeforeEach
-//    void setUp() {
-//        reset(mockLogger);
-//    }
-//
-//    @Test
-//    void testIOExceptionLogging() throws IOException {
-//        // Given
-//        when(mockReader.readLine()).thenThrow(new IOException("Test IOException"));
-//
-//        // Redirect BufferedReader to the mock
-//        System.setIn(new InputStreamReader(mockReader));
-//
-//        // When
-//        BankApplication.main(new String[]{});
-//
-//        // Then
-//        verify(mockLogger).error(anyString(), any(IOException.class));
-//    }
 }

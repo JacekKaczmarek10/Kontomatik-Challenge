@@ -6,8 +6,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GetAccountsInfoRequestProcessor extends AbstractRequestProcessor<String, List<Account>> {
 
     public GetAccountsInfoRequestProcessor() {
@@ -26,11 +29,11 @@ public class GetAccountsInfoRequestProcessor extends AbstractRequestProcessor<St
 
     @Override
     public List<Account> parseResponse(String jsonResponse, TypeReference<List<Account>> responseType) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+        final var objectMapper = new ObjectMapper();
         final var jsonNode = objectMapper.readTree(jsonResponse);
         final var accountsNode = jsonNode.get("response").get("data").get("accounts");
 
-        List<Account> accountsList = new ArrayList<>();
+        final var accountsList = new ArrayList<Account>();
 
         for (final var accountNode : accountsNode) {
             final var account = objectMapper.convertValue(accountNode, Account.class);

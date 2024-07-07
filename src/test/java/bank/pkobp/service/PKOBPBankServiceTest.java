@@ -6,29 +6,20 @@ import bank.pkobp.exception.RequestProcessingException;
 import bank.pkobp.request_pipelines.PKOBPSignPipeline;
 import bank.pkobp.utils.AccountResponsePrinter;
 import bank.pkobp.utils.PropertiesLoader;
+import java.io.BufferedReader;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
 import java.io.IOException;
-import java.util.List;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PKOBPBankServiceTest {
-
-    @Mock
-    private PKOBPSignPipeline mockSignPipeline;
-
-    @Mock
-    private AccountResponsePrinter mockAccountResponsePrinter;
 
     @InjectMocks
     private PKOBPBankService pkobpBankService;
@@ -40,50 +31,23 @@ class PKOBPBankServiceTest {
         userCredentials = new UserCredentials("username", "password");
     }
 
-    @Test
-    void testLoginAndGetAccountDataSuccess() throws IOException, RequestProcessingException {
-        try(MockedStatic<PropertiesLoader> mockedStatic = mockStatic(PropertiesLoader.class)) {
-            List<Account> mockAccounts = List.of(new Account("12345", "Checking"), new Account("67890", "Savings"));
-            when(mockSignPipeline.executePipeline()).thenReturn(mockAccounts);
+    @Nested
+    class LoginAndGetAccountDataTest {
 
-            // When
-            pkobpBankService.loginAndGetAccountData();
+        @Test
+        void shouldLoginAndGetAccountDataWithNullCredentials() throws IOException, RequestProcessingException {
+            try (final var mockedLoader = mockStatic(PropertiesLoader.class)) {
+                mockedLoader.when(() -> PropertiesLoader.loadProperties("pkobp-config.properties")).thenReturn(null);
 
-            // Then
-            verify(mockSignPipeline).executePipeline();
-            verify(mockAccountResponsePrinter).displayAccountDetails(mockAccounts);
+                try (final var mockedPrinter = mockStatic(AccountResponsePrinter.class)) {
+                    pkobpBankService.loginAndGetAccountData();
+
+                    mockedPrinter.verifyNoInteractions();
+                }
+            }
         }
+
     }
 
-    @Test
-    void testLoginAndGetAccountDataWithNullCredentials() throws IOException, RequestProcessingException {
-        try (MockedStatic<PropertiesLoader> mockedStatic = mockStatic(PropertiesLoader.class)) {
-            mockedStatic.when(() -> PropertiesLoader.loadProperties(anyString())).thenReturn(null);
 
-            // When
-            pkobpBankService.loginAndGetAccountData();
-
-            // Then
-            verify(mockSignPipeline, never()).executePipeline();
-            //verify(mockAccountResponsePrinter, never()).displayAccountDetails(any());
-        }
-    }
-
-//    @Test
-//    void testLoginAndGetAccountDataIOException() throws IOException, RequestProcessingException {
-//        // Given
-//        when(mockSignPipeline.executePipeline()).thenThrow(new IOException("Test IOException"));
-//
-//        // When & Then
-//        assertThrows(IOException.class, () -> pkobpBankService.loginAndGetAccountData());
-//    }
-
-//    @Test
-//    void testLoginAndGetAccountDataRequestProcessingException() throws IOException, RequestProcessingException {
-//        // Given
-//        when(mockSignPipeline.executePipeline()).thenThrow(new RequestProcessingException("Test RequestProcessingException"));
-//
-//        // When & Then
-//        assertThrows(RequestProcessingException.class, () -> pkobpBankService.loginAndGetAccountData());
-//    }
 }

@@ -10,10 +10,11 @@ import java.io.InputStreamReader;
 public class BankApplication {
 
     public static void main(String[] args) {
+        System.out.print("Choose your bank (PKO BP or PEKAO): ");
+
         final var reader = new BufferedReader(new InputStreamReader(System.in));
         final var bankLoginFacade = new BankLoginFacade();
 
-        System.out.print("Choose your bank (PKO BP or PEKAO): ");
         try {
             final var bankChoice = reader.readLine().trim().toUpperCase();
             bankLoginFacade.loginAndGetAccountData(bankChoice);
