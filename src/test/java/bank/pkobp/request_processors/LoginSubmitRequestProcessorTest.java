@@ -4,6 +4,10 @@ import bank.pkobp.entity.request.LoginSubmitRequest;
 import bank.pkobp.entity.response.AuthResponse;
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.ParseException;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -46,12 +50,41 @@ class LoginSubmitRequestProcessorTest {
                 "}";
         TypeReference<AuthResponse> typeReference = new TypeReference<>() {};
 
-        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.getFirstHeader("X-Session-Id")).thenReturn(new MockHeader("X-Session-Id", "sessionId"));
+
+        // Mocking HTTP response entity
         when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
+
+        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
 
         AuthResponse parsedResponse = requestProcessor.postRequest(request, typeReference);
 
         assertEquals("flowId", parsedResponse.flowId());
         assertEquals("token", parsedResponse.token());
+    }
+
+    private static class MockHeader implements Header {
+        private final String name;
+        private final String value;
+
+        MockHeader(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public HeaderElement[] getElements() throws ParseException {
+            return new HeaderElement[0];
+        }
     }
 }

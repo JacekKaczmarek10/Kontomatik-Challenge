@@ -58,9 +58,13 @@ class PropertiesLoaderTest {
         InputStream inputStream = new ByteArrayInputStream(MISSING_LOGIN_PROPERTIES.getBytes());
         when(mockClassLoader.getResourceAsStream("missing_login.properties")).thenReturn(inputStream);
 
-        UserCredentials userCredentials = PropertiesLoader.loadProperties("missing_login.properties", mockClassLoader);
+        NullPointerException exception = assertThrows(NullPointerException.class, () ->
+                PropertiesLoader.loadProperties("missing_login.properties", mockClassLoader));
 
-        assertNull(userCredentials);
+        assertEquals("Login is missing or empty.", exception.getMessage());
+
+        // Verify that getResourceAsStream was called with the correct argument
+        verify(mockClassLoader).getResourceAsStream("missing_login.properties");
     }
 
     @Test
@@ -68,8 +72,12 @@ class PropertiesLoaderTest {
         InputStream inputStream = new ByteArrayInputStream(MISSING_PASSWORD_PROPERTIES.getBytes());
         when(mockClassLoader.getResourceAsStream("missing_password.properties")).thenReturn(inputStream);
 
-        UserCredentials userCredentials = PropertiesLoader.loadProperties("missing_password.properties", mockClassLoader);
+        NullPointerException exception = assertThrows(NullPointerException.class, () ->
+                PropertiesLoader.loadProperties("missing_password.properties", mockClassLoader));
 
-        assertNull(userCredentials);
+        assertEquals("Password is missing or empty.", exception.getMessage());
+
+        // Optionally, you can also verify other behaviors after the exception is thrown
+        verify(mockClassLoader).getResourceAsStream("missing_password.properties");
     }
 }

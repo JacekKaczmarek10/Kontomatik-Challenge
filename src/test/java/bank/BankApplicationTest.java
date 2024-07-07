@@ -3,13 +3,14 @@ package bank;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 class BankApplicationTest {
 
@@ -83,4 +84,36 @@ class BankApplicationTest {
         // Reset System.in for subsequent tests
         System.setIn(systemIn);
     }
+
+//    @Mock
+//    private BufferedReader mockReader;
+//
+//    @Mock
+//    private BankLoginFacade mockBankLoginFacade;
+//
+//    @InjectMocks
+//    private BankApplication bankApplication;
+//
+//    @Mock
+//    private Logger mockLogger;
+//
+//    @BeforeEach
+//    void setUp() {
+//        reset(mockLogger);
+//    }
+//
+//    @Test
+//    void testIOExceptionLogging() throws IOException {
+//        // Given
+//        when(mockReader.readLine()).thenThrow(new IOException("Test IOException"));
+//
+//        // Redirect BufferedReader to the mock
+//        System.setIn(new InputStreamReader(mockReader));
+//
+//        // When
+//        BankApplication.main(new String[]{});
+//
+//        // Then
+//        verify(mockLogger).error(anyString(), any(IOException.class));
+//    }
 }
