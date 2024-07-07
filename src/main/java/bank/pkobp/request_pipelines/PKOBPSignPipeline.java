@@ -33,31 +33,31 @@ public class PKOBPSignPipeline {
         return accountDataRequest();
     }
 
-    private String readOTPFromUser() throws IOException {
+    String readOTPFromUser() throws IOException {
         System.out.print("Enter OTP: ");
         final var reader = new BufferedReader(new InputStreamReader(System.in));
         return reader.readLine().trim();
     }
 
-    protected LoginResponse loginRequest() throws IOException, RequestProcessingException {
+    LoginResponse loginRequest() throws IOException, RequestProcessingException {
         final var loginSubmitRequest = new LoginSubmitRequest(userCredentials.login());
         final var loginSubmitRequestProcessor = new LoginSubmitRequestProcessor();
         return loginSubmitRequestProcessor.executeRequest(loginSubmitRequest, new TypeReference<>() {});
     }
 
-    protected LoginResponse passwordRequest(LoginResponse loginResponse) throws IOException, RequestProcessingException {
+    LoginResponse passwordRequest(LoginResponse loginResponse) throws IOException, RequestProcessingException {
         final var loginRequest = new PasswordSubmitRequest(loginResponse, userCredentials.password());
         final var passwordSubmitRequestProcessor = new PasswordSubmitRequestProcessor();
         return passwordSubmitRequestProcessor.executeRequest(loginRequest, new TypeReference<>() {});
     }
 
-    protected void otpRequest(String otp, LoginResponse loginResponse) throws IOException, RequestProcessingException {
+    void otpRequest(String otp, LoginResponse loginResponse) throws IOException, RequestProcessingException {
         final var loginRequest = new OTPSubmitRequest(loginResponse, otp);
-        OTPSubmitRequestProcessor otpSubmitRequestProcessor = new OTPSubmitRequestProcessor();
+        final var otpSubmitRequestProcessor = new OTPSubmitRequestProcessor();
         otpSubmitRequestProcessor.executeRequest(loginRequest, new TypeReference<>() {});
     }
 
-    protected List<Account> accountDataRequest() throws IOException, RequestProcessingException {
+    List<Account> accountDataRequest() throws IOException, RequestProcessingException {
         final var json = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
         final var getAccountsInfoRequestProcessor = new GetAccountsInfoRequestProcessor();
         return getAccountsInfoRequestProcessor.executeRequest(json, new TypeReference<>() {});
