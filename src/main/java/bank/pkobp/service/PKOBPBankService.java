@@ -14,7 +14,7 @@ public class PKOBPBankService implements BankService {
 
     @Override
     public void loginAndGetAccountData() throws IOException, RequestProcessingException {
-        final var userCredentials = loadProperties();
+        final var userCredentials = loadProperties("pkobp-config.properties");
 
         if (userCredentials == null){
             return;

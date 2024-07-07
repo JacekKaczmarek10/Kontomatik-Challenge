@@ -4,6 +4,8 @@ import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -18,12 +20,18 @@ import java.util.Map;
 
 public abstract class AbstractRequestProcessor<R, S> {
 
+    @Getter
     private final Map<String, String> headers;
-    private final ObjectMapper objectMapper;
+    @Setter
+    private ObjectMapper objectMapper;
+    @Getter
+    @Setter
+    private CloseableHttpClient httpClient;
 
     protected AbstractRequestProcessor() {
         this.headers = new HashMap<>();
         this.objectMapper = new ObjectMapper();
+        this.httpClient = HttpClients.createDefault();
     }
 
     protected abstract String getUrl();
@@ -50,31 +58,34 @@ public abstract class AbstractRequestProcessor<R, S> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public S parseResponse(String jsonResponse, TypeReference<S> responseType) throws JsonProcessingException {
-        return objectMapper.readValue(jsonResponse, responseType);
+        if (responseType.getType().equals(String.class)) {
+            return (S) jsonResponse;
+        } else {
+            return objectMapper.readValue(jsonResponse, responseType);
+        }
     }
 
-    public S executeRequest(R request, TypeReference<S> responseType) throws IOException, RequestProcessingException {
+    public S postRequest(R request, TypeReference<S> responseType) throws IOException, RequestProcessingException {
         setCommonHeaders();
         setSpecificHeaders();
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(getUrl());
+        HttpPost httpPost = new HttpPost(getUrl());
 
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                httpPost.setHeader(entry.getKey(), entry.getValue());
-            }
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            httpPost.setHeader(entry.getKey(), entry.getValue());
+        }
 
-            String json = convertObjectToJson(request);
+        String json = convertObjectToJson(request);
 
-            StringEntity entity = new StringEntity(json);
-            httpPost.setEntity(entity);
+        StringEntity entity = new StringEntity(json);
+        httpPost.setEntity(entity);
 
-            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-                String rawResponse = EntityUtils.toString(response.getEntity());
-                processRawResponse(response);
-                return parseResponse(rawResponse, responseType);
-            }
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+            String rawResponse = EntityUtils.toString(response.getEntity());
+            processRawResponse(response);
+            return parseResponse(rawResponse, responseType);
         }
     }
 

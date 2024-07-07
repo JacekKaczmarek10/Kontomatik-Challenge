@@ -2,11 +2,9 @@ package bank.pkobp.request_processors;
 
 import bank.pkobp.context.SessionContext;
 import bank.pkobp.entity.request.OTPSubmitRequest;
-import bank.pkobp.entity.response.LoginResponse;
+import bank.pkobp.entity.response.AuthResponse;
 
-public class OTPSubmitRequestProcessor extends AbstractRequestProcessor<OTPSubmitRequest, LoginResponse> {
-
-    private static final String LOGIN_URL = "https://www.ipko.pl/ipko3/login";
+public class OTPSubmitRequestProcessor extends AbstractRequestProcessor<OTPSubmitRequest, AuthResponse> {
 
     public OTPSubmitRequestProcessor() {
         super();
@@ -14,7 +12,7 @@ public class OTPSubmitRequestProcessor extends AbstractRequestProcessor<OTPSubmi
 
     @Override
     protected String getUrl() {
-        return LOGIN_URL;
+        return "https://www.ipko.pl/ipko3/login";
     }
 
     @Override

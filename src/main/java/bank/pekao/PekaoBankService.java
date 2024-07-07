@@ -33,7 +33,7 @@ public class PekaoBankService implements BankService {
 
     @Override
     public void loginAndGetAccountData() throws IOException {
-        userCredentials = PropertiesLoader.loadProperties();
+        userCredentials = PropertiesLoader.loadProperties("pekao-config.properties");
 
         if (userCredentials == null){
             return;

@@ -31,8 +31,12 @@ public class PekaoBankServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        System.setErr(new PrintStream(errContent));
+
+        try(var ignored = MockitoAnnotations.openMocks(this)){
+            System.setErr(new PrintStream(errContent));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterEach
@@ -45,8 +49,8 @@ public class PekaoBankServiceTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            try(MockedStatic<PropertiesLoader> mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
-                mockedStatic.when(PropertiesLoader::loadProperties).thenAnswer(invocation -> null);
+            try(MockedStatic<PropertiesLoader> mockedStatic = mockStatic(PropertiesLoader.class)) {
+                mockedStatic.when(() -> PropertiesLoader.loadProperties(any(String.class))).thenAnswer(invocation -> null);
                 doReturn("test").when(pekaoBankService).requestPasswordMask();
                 doReturn("test").when(pekaoBankService).parsePasswordMask(any());
                 doReturn("test").when(pekaoBankService).extractMaskedPassword(any());
@@ -58,7 +62,7 @@ public class PekaoBankServiceTest {
         void shouldLoadProperties() throws IOException {
             try(MockedStatic<PropertiesLoader> mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
                 callService();
-                mockedStatic.verify(PropertiesLoader::loadProperties);
+                mockedStatic.verify(() -> PropertiesLoader.loadProperties(any(String.class)));
             }
         }
 
@@ -94,7 +98,7 @@ public class PekaoBankServiceTest {
             pekaoBankService.loginAndGetAccountData();
         }
     }
-    
+
     @Nested
     class RequestPasswordMaskTest {
 
@@ -115,7 +119,8 @@ public class PekaoBankServiceTest {
         void shouldExecutePostRequest() throws IOException {
             callService();
 
-            verify(pekaoBankService).createPasswordMaskRequestBody();
+            verify(pekaoBankService).executePostRequest(any(String.class), any(String.class));
+
         }
 
         private void callService() throws IOException {
