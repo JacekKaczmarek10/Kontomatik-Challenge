@@ -17,7 +17,7 @@ public class BankApplication {
 
         try {
             final var bankChoice = reader.readLine().trim().toUpperCase();
-            bankLoginFacade.loginAndGetAccountData(bankChoice);
+            bankLoginFacade.determineBankType(bankChoice);
         } catch (IOException e) {
             log.error("An error occurred while reading input: {0}", e);
         }

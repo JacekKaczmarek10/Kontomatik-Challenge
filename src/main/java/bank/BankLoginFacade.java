@@ -10,7 +10,7 @@ public class BankLoginFacade {
     private static final String PKOBP = "PKO BP";
     private static final String PEKAO = "PEKAO";
 
-    public void loginAndGetAccountData(final String bankChoice) {
+    public void determineBankType(final String bankChoice) {
         final var bankService = switch (bankChoice) {
             case PKOBP -> new PKOBPBankService();
             case PEKAO -> new PekaoBankService();
