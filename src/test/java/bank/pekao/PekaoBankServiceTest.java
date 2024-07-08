@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -16,7 +18,6 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -24,16 +25,18 @@ public class PekaoBankServiceTest {
 
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     private final PrintStream originalErr = System.err;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks
     @Spy
     private PekaoBankService pekaoBankService;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     public void setUp() {
 
-        try(var ignored = MockitoAnnotations.openMocks(this)){
+        try (var ignored = MockitoAnnotations.openMocks(this)) {
             System.setErr(new PrintStream(errContent));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -46,11 +49,11 @@ public class PekaoBankServiceTest {
     }
 
     @Nested
-    class PerformLoginTest {
+    class LoginAndGetAccountDataTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            try(MockedStatic<PropertiesLoader> mockedStatic = mockStatic(PropertiesLoader.class)) {
+            try (final var mockedStatic = mockStatic(PropertiesLoader.class)) {
                 mockedStatic.when(() -> PropertiesLoader.loadProperties(any(String.class))).thenAnswer(invocation -> null);
                 doReturn("test").when(pekaoBankService).requestPasswordMask();
                 doReturn("test").when(pekaoBankService).parsePasswordMask(any());
@@ -61,7 +64,7 @@ public class PekaoBankServiceTest {
 
         @Test
         void shouldLoadProperties() throws IOException {
-            try(MockedStatic<PropertiesLoader> mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
+            try (final var mockedStatic = Mockito.mockStatic(PropertiesLoader.class)) {
                 callService();
                 mockedStatic.verify(() -> PropertiesLoader.loadProperties(any(String.class)));
             }
@@ -130,36 +133,19 @@ public class PekaoBankServiceTest {
     }
 
     @Nested
-    class ExecutePostRequestTest {
+    class ExtractMaskedPasswordTest {
 
         @Test
-        void shouldReturnResponse() throws IOException {
-            final var response = callService();
+        void shouldReturnMaskedPassword() {
+            pekaoBankService.setUserCredentials(new UserCredentials(null, "password"));
 
-            assertThat(response).isNotNull();
-        }
+            final var result = callService();
 
-        private String callService() throws IOException {
-            return pekaoBankService.executePostRequest("https://www.pekao24.pl/api/authentication/customer/logon","test");
-        }
-
-    }
-
-    @Nested
-    class CreatePasswordMaskRequestBodyTest {
-
-        @Test
-        void shouldReturnJsonString() {
-            pekaoBankService.setUserCredentials(new UserCredentials("test", null));
-
-            final var passwordMask = callService();
-
-            JsonNode jsonObject = assertDoesNotThrow(() -> objectMapper.readTree(passwordMask));
-            assertThat(jsonObject.get("customer").asText()).isEqualTo("test");
+            assertThat(result).isEqualTo("pswd");
         }
 
         private String callService() {
-            return pekaoBankService.createPasswordMaskRequestBody();
+            return pekaoBankService.extractMaskedPassword("10101001");
         }
     }
 
@@ -179,19 +165,37 @@ public class PekaoBankServiceTest {
     }
 
     @Nested
-    class ExtractMaskedPasswordTest {
+    class ExecutePostRequestTest {
 
         @Test
-        void shouldReturnMaskedPassword() {
-            pekaoBankService.setUserCredentials(new UserCredentials(null, "password"));
+        void shouldReturnResponse() throws IOException {
+            final var response = callService();
 
-            final var result = callService();
+            assertThat(response).isNotNull();
+        }
 
-            assertEquals("pswd", result);
+        private String callService() throws IOException {
+            return pekaoBankService.executePostRequest("https://www.pekao24.pl/api/authentication/customer/logon", "test");
+        }
+
+    }
+
+    @Nested
+    class CreatePasswordMaskRequestBodyTest {
+
+        @Test
+        void shouldReturnJsonString() {
+            objectMapper = new ObjectMapper();
+            pekaoBankService.setUserCredentials(new UserCredentials("test", null));
+
+            final var passwordMask = callService();
+
+            final var jsonObject = assertDoesNotThrow(() -> objectMapper.readTree(passwordMask));
+            assertThat(jsonObject.get("customer").asText()).isEqualTo("test");
         }
 
         private String callService() {
-            return pekaoBankService.extractMaskedPassword("10101001");
+            return pekaoBankService.createPasswordMaskRequestBody();
         }
     }
 
@@ -219,7 +223,7 @@ public class PekaoBankServiceTest {
         }
 
         private void callService() throws IOException {
-             pekaoBankService.login("test");
+            pekaoBankService.login("test");
         }
     }
 
@@ -228,6 +232,7 @@ public class PekaoBankServiceTest {
 
         @Test
         void shouldReturnJsonString() {
+            objectMapper = new ObjectMapper();
             pekaoBankService.setUserCredentials(new UserCredentials("test", null));
 
             final var result = callService();
@@ -242,5 +247,34 @@ public class PekaoBankServiceTest {
         private String callService() {
             return pekaoBankService.createLoginRequestBody("test");
         }
+    }
+
+    @Nested
+    class ConvertMapToJsonTest {
+
+        @Test
+        public void shouldConvertMapToJsonSuccess() throws Exception {
+            Map<String, String> map = new HashMap<>();
+            map.put("key1", "value1");
+            map.put("key2", "value2");
+            final var expectedJson = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
+            when(objectMapper.writeValueAsString(map)).thenReturn(expectedJson);
+
+            final var jsonResult = pekaoBankService.convertMapToJson(map);
+
+            assertThat(jsonResult).isEqualTo(expectedJson);
+        }
+
+        @Test
+        public void shouldConvertMapToJsonEmptyMap() throws Exception {
+            Map<String, String> map = new HashMap<>();
+            final var expectedJson = "{}";
+            when(objectMapper.writeValueAsString(map)).thenReturn(expectedJson);
+
+            final var jsonResult = pekaoBankService.convertMapToJson(map);
+
+            assertThat(jsonResult).isEqualTo(expectedJson);
+        }
+
     }
 }

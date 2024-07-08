@@ -3,7 +3,6 @@ package bank.pekao;
 import bank.pkobp.entity.UserCredentials;
 import bank.pkobp.service.BankService;
 import bank.pkobp.utils.PropertiesLoader;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +52,22 @@ public class PekaoBankService implements BankService {
         return executePostRequest(PASSWORD_MASK_URL, createPasswordMaskRequestBody());
     }
 
-    String executePostRequest(String url, String json) throws IOException {
+    String extractMaskedPassword(final String passwordMask) {
+        final var maskedPassword = new StringBuilder();
+        for (int i = 0; i < passwordMask.length(); i++) {
+            if (passwordMask.charAt(i) == '1') {
+                maskedPassword.append(userCredentials.password().charAt(i));
+            }
+        }
+        return maskedPassword.toString();
+    }
+
+    String parsePasswordMask(final String response) throws IOException {
+        final var jsonResponse = objectMapper.readTree(response);
+        return jsonResponse.get("passwordMask").asText();
+    }
+
+    String executePostRequest(final String url, final String json) throws IOException {
         final var postRequest = new HttpPost(url);
         postRequest.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         postRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON);
@@ -66,41 +80,26 @@ public class PekaoBankService implements BankService {
     String createPasswordMaskRequestBody() {
         final var requestBody = new HashMap<String, String>();
         requestBody.put("customer", userCredentials.login());
-        String passwordMaskRequestBody = convertMapToJson(requestBody);
+        final var passwordMaskRequestBody = convertMapToJson(requestBody);
         log.info("Password Mask Request: {}", passwordMaskRequestBody);
         return passwordMaskRequestBody;
     }
 
-    String parsePasswordMask(String response) throws IOException {
-        JsonNode jsonResponse = objectMapper.readTree(response);
-        return jsonResponse.get("passwordMask").asText();
-    }
-
-    String extractMaskedPassword(String passwordMask) {
-        final var maskedPassword = new StringBuilder();
-        for (int i = 0; i < passwordMask.length(); i++) {
-            if (passwordMask.charAt(i) == '1') {
-                maskedPassword.append(userCredentials.password().charAt(i));
-            }
-        }
-        return maskedPassword.toString();
-    }
-
-    void login(String maskedPassword) throws IOException {
+    void login(final String maskedPassword) throws IOException {
         final var loginResponse = executePostRequest(LOGIN_URL, createLoginRequestBody(maskedPassword));
         log.info("Login Response: {}", loginResponse);
     }
 
-    String createLoginRequestBody(String maskedPassword) {
+    String createLoginRequestBody(final String maskedPassword) {
         final var requestBody = new HashMap<String, String>();
         requestBody.put("customer", userCredentials.login());
         requestBody.put("password", maskedPassword);
-        String loginRequest = convertMapToJson(requestBody);
-        log.info("Login Response: {}", loginRequest);
+        final var loginRequest = convertMapToJson(requestBody);
+        log.info("Login Request: {}", loginRequest);
         return loginRequest;
     }
 
-    private String convertMapToJson(Map<String, String> map) {
+    String convertMapToJson(final Map<String, String> map) {
         try {
             return objectMapper.writeValueAsString(map);
         } catch (IOException e) {
@@ -108,4 +107,5 @@ public class PekaoBankService implements BankService {
             return "{}";
         }
     }
+
 }
