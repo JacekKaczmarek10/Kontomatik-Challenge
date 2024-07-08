@@ -8,6 +8,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -15,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -36,24 +37,31 @@ class PasswordSubmitRequestProcessorTest {
         requestProcessor.setHttpClient(mockHttpClient);
     }
 
-    @Test
-    void testPostRequest() throws IOException, RequestProcessingException {
-        PasswordSubmitRequest request = new PasswordSubmitRequest(new AuthResponse("token", "flowId"), "password");
+    @Nested
+    class PostRequestTests {
 
-        String jsonResponse = "{" +
-                "    \"state_id\": \"one_time_password\"," +
-                "    \"flow_id\": \"flowId\"," +
-                "    \"httpStatus\": 200," +
-                "    \"token\": \"token\"" +
-                "}";
-        TypeReference<AuthResponse> typeReference = new TypeReference<>() {};
+        @Test
+        void shouldReturnParsedResponse() throws IOException, RequestProcessingException {
+            final var request = new PasswordSubmitRequest(new AuthResponse("token", "flowId"), "password");
+            final var jsonResponse = "{" +
+                    "    \"state_id\": \"one_time_password\"," +
+                    "    \"flow_id\": \"flowId\"," +
+                    "    \"httpStatus\": 200," +
+                    "    \"token\": \"token\"," +
+                    "    \"response\": {" +
+                    "        \"fields\": {" +
+                    "            \"errors\": \"null\"" +
+                    "        }" +
+                    "    }" +
+                    "}";
+            final var typeReference = new TypeReference<AuthResponse>() {};
+            when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
+            when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
 
-        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
+            final var parsedResponse = requestProcessor.postRequest(request, typeReference);
 
-        AuthResponse parsedResponse = requestProcessor.postRequest(request, typeReference);
-
-        assertEquals("flowId", parsedResponse.flowId());
-        assertEquals("token", parsedResponse.token());
+            assertThat(parsedResponse.flowId()).isEqualTo("flowId");
+            assertThat(parsedResponse.token()).isEqualTo("token");
+        }
     }
 }

@@ -85,6 +85,7 @@ public abstract class AbstractRequestProcessor<R, S> {
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
             String rawResponse = EntityUtils.toString(response.getEntity());
             processRawResponse(response);
+            processRawJsonResponse(rawResponse);
             return parseResponse(rawResponse, responseType);
         } catch (IOException | ParseException e) {
             log.error("Error executing POST request: {}", e.getMessage());
@@ -92,6 +93,6 @@ public abstract class AbstractRequestProcessor<R, S> {
         }
     }
 
-
-    protected void processRawResponse(CloseableHttpResponse rawResponse) throws RequestProcessingException {}
+    protected void processRawResponse(CloseableHttpResponse rawResponse) throws RequestProcessingException, IOException, ParseException {}
+    protected void processRawJsonResponse(String jsonResponse) throws RequestProcessingException, IOException {}
 }

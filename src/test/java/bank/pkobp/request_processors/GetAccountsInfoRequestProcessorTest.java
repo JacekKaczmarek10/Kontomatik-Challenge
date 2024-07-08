@@ -10,13 +10,16 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.io.IOException;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -42,34 +45,46 @@ class GetAccountsInfoRequestProcessorTest {
         requestProcessor.setObjectMapper(objectMapper);
     }
 
-    @Test
-    void testConvertObjectToJson() throws JsonProcessingException {
-        String inputString = "test string";
+    @Nested
+    class ConvertObjectToJsonTests {
 
-        String json = requestProcessor.convertObjectToJson(inputString);
+        @Test
+        void shouldConvertStringInputToJson() throws JsonProcessingException {
+            final var inputString = "test string";
 
-        assertEquals("test string", json);
+            final var json = requestProcessor.convertObjectToJson(inputString);
+
+            assertThat(json).isEqualTo("test string");
+        }
     }
 
-    @Test
-    void testPostRequest() throws IOException, RequestProcessingException {
-        String requestObject = "{\"some\": \"request\"}";
-        String jsonResponse = "{\"response\": {\"data\": {\"accounts\": [{\"name\": \"name\", \"balance\": 100.0}]}}}";
-        TypeReference<List<Account>> typeReference = new TypeReference<>() {};
+    @Nested
+    class PostRequestTests {
 
-        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
+        @Test
+        void shouldPostRequestAndReturnResponse() throws IOException, RequestProcessingException {
+            final var requestObject = "{\"some\": \"request\"}";
+            final var jsonResponse = "{\"response\": {\"data\": {\"accounts\": [{\"name\": \"name\", \"balance\": 100.0}]}}}";
+            final var typeReference = new TypeReference<List<Account>>() {};
+            when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
+            when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
 
-        List<Account> parsedResponse = requestProcessor.postRequest(requestObject, typeReference);
-        assertEquals(1, parsedResponse.size());
-        assertEquals("name", parsedResponse.getFirst().name());
-        assertEquals("100.0", parsedResponse.getFirst().balance());
+            final var parsedResponse = requestProcessor.postRequest(requestObject, typeReference);
+
+            assertThat(parsedResponse).hasSize(1);
+            assertThat(parsedResponse.getFirst().name()).isEqualTo("name");
+            assertThat(parsedResponse.getFirst().balance()).isEqualTo("100.0");
+        }
     }
 
-    @Test
-    void testSetSpecificHeaders() {
-        requestProcessor.setSpecificHeaders();
+    @Nested
+    class SetSpecificHeadersTests {
 
-        assertEquals("mocked-session-id", requestProcessor.getHeaders().get("x-session-id"));
+        @Test
+        void shouldSetSpecificHeaders() {
+            requestProcessor.setSpecificHeaders();
+
+            assertThat(requestProcessor.getHeaders()).containsEntry("x-session-id", "mocked-session-id");
+        }
     }
 }

@@ -2,15 +2,18 @@ package bank.pkobp.utils;
 
 import bank.pkobp.entity.Account;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class AccountResponsePrinterTest {
@@ -22,39 +25,43 @@ class AccountResponsePrinterTest {
         System.setOut(new PrintStream(outContent));
     }
 
-    @Test
-    void testDisplayAccountDetailsWithNormalList() {
-        List<Account> accounts = Arrays.asList(
-                new Account("John Doe", "1000.00"),
-                new Account("Jane Smith", "2500.50")
-        );
+    @Nested
+    class DisplayAccountDetailsTests {
 
-        AccountResponsePrinter.displayAccountDetails(accounts);
+        @Test
+        void shouldPrintDetailsForNormalList() {
+            List<Account> accounts = Arrays.asList(
+                    new Account("John Doe", "1000.00"),
+                    new Account("Jane Smith", "2500.50")
+            );
 
-        String printedOutput = outContent.toString();
+            AccountResponsePrinter.displayAccountDetails(accounts);
 
-        assertTrue(printedOutput.contains("List accounts:"));
-        assertTrue(printedOutput.contains("Name: John Doe"));
-        assertTrue(printedOutput.contains("Balance: 1000.00"));
-        assertTrue(printedOutput.contains("Name: Jane Smith"));
-        assertTrue(printedOutput.contains("Balance: 2500.50"));
-    }
+            String printedOutput = outContent.toString();
+            assertThat(printedOutput)
+                    .contains("List accounts:")
+                    .contains("Name: John Doe")
+                    .contains("Balance: 1000.00")
+                    .contains("Name: Jane Smith")
+                    .contains("Balance: 2500.50");
+        }
 
-    @Test
-    void testDisplayAccountDetailsWithEmptyList() {
-        List<Account> accounts = Collections.emptyList();
+        @Test
+        void shouldPrintNoAccountsFoundForEmptyList() {
+            List<Account> accounts = Collections.emptyList();
 
-        AccountResponsePrinter.displayAccountDetails(accounts);
+            AccountResponsePrinter.displayAccountDetails(accounts);
 
-        assertTrue(outContent.toString().contains("List accounts:"));
-        assertTrue(outContent.toString().contains("No accounts found"));
-    }
+            assertThat(outContent.toString()).contains("List accounts:");
+            assertThat(outContent.toString()).contains("No accounts found");
+        }
 
-    @Test
-    void testDisplayAccountDetailsWithNullList() {
-        AccountResponsePrinter.displayAccountDetails(null);
+        @Test
+        void shouldPrintNoAccountsFoundForNullList() {
+            AccountResponsePrinter.displayAccountDetails(null);
 
-        assertTrue(outContent.toString().contains("List accounts:"));
-        assertTrue(outContent.toString().contains("No accounts found"));
+            assertThat(outContent.toString()).contains("List accounts:");
+            assertThat(outContent.toString()).contains("No accounts found");
+        }
     }
 }

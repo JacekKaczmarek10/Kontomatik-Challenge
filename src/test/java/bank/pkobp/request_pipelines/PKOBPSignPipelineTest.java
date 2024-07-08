@@ -12,6 +12,7 @@ import bank.pkobp.request_processors.LoginSubmitRequestProcessor;
 import bank.pkobp.request_processors.OTPSubmitRequestProcessor;
 import bank.pkobp.request_processors.PasswordSubmitRequestProcessor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,87 +58,112 @@ class PKOBPSignPipelineTest {
         signPipeline.setGetAccountsInfoRequestProcessor(mockAccountsProcessor);
     }
 
-    @Test
-    void testExecutePipeline() throws IOException, RequestProcessingException {
-        AuthResponse mockLoginResponse = new AuthResponse("mockLoginToken", "flowId");
-        AuthResponse mockPasswordResponse = new AuthResponse("mockPasswordToken", "flowId");
-        List<Account> mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
-        String mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+    @Nested
+    class ExecutePipelineTest {
 
-        when(mockLoginProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
-        when(mockPasswordProcessor.postRequest(any(), any())).thenReturn(mockPasswordResponse);
-        when(mockOtpProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
-        when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
-        when(mockReader.readLine()).thenReturn("123456");
+        @Test
+        void shouldExecutePipeline() throws IOException, RequestProcessingException {
+            final var mockLoginResponse = new AuthResponse("mockLoginToken", "flowId");
+            final var mockPasswordResponse = new AuthResponse("mockPasswordToken", "flowId");
+            final var mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
+            final var mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+            when(mockLoginProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
+            when(mockPasswordProcessor.postRequest(any(), any())).thenReturn(mockPasswordResponse);
+            when(mockOtpProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
+            when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
+            when(mockReader.readLine()).thenReturn("123456");
 
-        List<Account> result = signPipeline.executePipeline();
+            final var result = signPipeline.executePipeline();
 
-        assertEquals(mockAccounts, result);
-        verify(mockLoginProcessor, times(1)).postRequest(any(), any());
-        verify(mockPasswordProcessor, times(1)).postRequest(any(), any());
-        verify(mockOtpProcessor, times(1)).postRequest(any(), any());
-        verify(mockAccountsProcessor, times(1)).postRequest(any(), any());
-        verify(mockReader, times(1)).readLine();
+            assertEquals(mockAccounts, result);
+            verify(mockLoginProcessor, times(1)).postRequest(any(), any());
+            verify(mockPasswordProcessor, times(1)).postRequest(any(), any());
+            verify(mockOtpProcessor, times(1)).postRequest(any(), any());
+            verify(mockAccountsProcessor, times(1)).postRequest(any(), any());
+            verify(mockReader, times(1)).readLine();
+        }
+
     }
 
-    @Test
-    void testReadOTPFromUser() throws IOException {
-        when(mockReader.readLine()).thenReturn("123456\n");
+    @Nested
+    class ReadOTPFromUserTest {
 
-        String otp = signPipeline.readOTPFromUser();
-        assertEquals("123456", otp);
+        @Test
+        void shouldReadOTPFromUser() throws IOException {
+            when(mockReader.readLine()).thenReturn("123456\n");
+
+            final var otp = signPipeline.readOTPFromUser();
+
+            assertEquals("123456", otp);
+        }
+
     }
 
-    @Test
-    void testLoginRequest() throws IOException, RequestProcessingException {
-        AuthResponse mockResponse = new AuthResponse("mockToken", "flowId");
-        LoginSubmitRequest mockRequest = new LoginSubmitRequest("username");
+    @Nested
+    class LoginRequestTest {
 
-        when(mockLoginProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
+        @Test
+        void shouldLoginRequest() throws IOException, RequestProcessingException {
+            final var mockResponse = new AuthResponse("mockToken", "flowId");
+            final var mockRequest = new LoginSubmitRequest("username");
+            when(mockLoginProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
 
-        AuthResponse result = signPipeline.loginRequest();
+            final var result = signPipeline.loginRequest();
 
-        assertEquals(mockResponse, result);
-        verify(mockLoginProcessor, times(1)).postRequest(eq(mockRequest), any());
+            assertEquals(mockResponse, result);
+            verify(mockLoginProcessor, times(1)).postRequest(eq(mockRequest), any());
+        }
     }
 
-    @Test
-    void testPasswordRequest() throws IOException, RequestProcessingException {
-        AuthResponse mockResponse = new AuthResponse("token", "flowId");
-        AuthResponse mockLoginResponse = new AuthResponse("token", "flowId");
-        PasswordSubmitRequest mockRequest = new PasswordSubmitRequest(mockLoginResponse, "password");
+    @Nested
+    class PasswordRequestTest {
 
-        when(mockPasswordProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
+        @Test
+        void shouldPasswordRequest() throws IOException, RequestProcessingException {
+            final var mockResponse = new AuthResponse("token", "flowId");
+            final var mockLoginResponse = new AuthResponse("token", "flowId");
+            final var mockRequest = new PasswordSubmitRequest(mockLoginResponse, "password");
+            when(mockPasswordProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
 
-        AuthResponse result = signPipeline.passwordRequest(mockLoginResponse);
+            final var result = signPipeline.passwordRequest(mockLoginResponse);
 
-        assertEquals(mockResponse, result);
-        verify(mockPasswordProcessor, times(1)).postRequest(eq(mockRequest), any());
+            assertEquals(mockResponse, result);
+            verify(mockPasswordProcessor, times(1)).postRequest(eq(mockRequest), any());
+        }
+
     }
 
-    @Test
-    void testOtpRequest() throws IOException, RequestProcessingException {
-        AuthResponse mockResponse = new AuthResponse("token", "flowId");
-        OTPSubmitRequest mockRequest = new OTPSubmitRequest(mockResponse, "123456");
+    @Nested
+    class OtpRequestTest {
 
-        when(mockOtpProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
+        @Test
+        void shouldOtpRequest() throws IOException, RequestProcessingException {
+            final var mockResponse = new AuthResponse("token", "flowId");
+            final var mockRequest = new OTPSubmitRequest(mockResponse, "123456");
+            when(mockOtpProcessor.postRequest(eq(mockRequest), any())).thenReturn(mockResponse);
 
-        signPipeline.otpRequest("123456", mockResponse);
+            signPipeline.otpRequest("123456", mockResponse);
 
-        verify(mockOtpProcessor, times(1)).postRequest(eq(mockRequest), any());
+            verify(mockOtpProcessor, times(1)).postRequest(eq(mockRequest), any());
+        }
+
     }
 
-    @Test
-    void testAccountDataRequest() throws IOException, RequestProcessingException {
-        List<Account> mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
-        String mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+    @Nested
+    class AccountDataRequestTest {
 
-        when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
+        @Test
+        void shouldAccountDataRequest() throws IOException, RequestProcessingException {
+            final var mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
+            final var mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+            when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
 
-        List<Account> result = signPipeline.accountDataRequest();
+            final var result = signPipeline.accountDataRequest();
 
-        assertEquals(mockAccounts, result);
-        verify(mockAccountsProcessor, times(1)).postRequest(eq(mockJson), any());
+            assertEquals(mockAccounts, result);
+            verify(mockAccountsProcessor, times(1)).postRequest(eq(mockJson), any());
+        }
+
     }
 
 }

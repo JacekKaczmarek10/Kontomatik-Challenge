@@ -8,10 +8,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HeaderElement;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,8 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -41,32 +40,38 @@ class LoginSubmitRequestProcessorTest {
         requestProcessor.setHttpClient(mockHttpClient);
     }
 
-    @Test
-    void testProcessRawResponse_NullResponse() {
-        LoginSubmitRequestProcessor processor = new LoginSubmitRequestProcessor();
+    @Nested
+    class ProcessRawResponseTests {
 
-        assertThrows(InvalidCredentialsException.class, () ->
-                processor.processRawResponse(null));
+        @Test
+        void shouldThrowInvalidCredentialsExceptionWhenResponseIsNull() {
+            final var processor = new LoginSubmitRequestProcessor();
+
+            assertThatThrownBy(() -> processor.processRawResponse(null))
+                    .isInstanceOf(InvalidCredentialsException.class);
+        }
     }
 
-    @Test
-    void testPostRequest() throws IOException, RequestProcessingException {
-        LoginSubmitRequest request = new LoginSubmitRequest("login");
+    @Nested
+    class PostRequestTests {
 
-        String jsonResponse = "{" +
-                "    \"flow_id\": \"flowId\"," +
-                "    \"token\": \"token\"" +
-                "}";
-        TypeReference<AuthResponse> typeReference = new TypeReference<>() {};
+        @Test
+        void shouldReturnParsedResponse() throws IOException, RequestProcessingException {
+            final var request = new LoginSubmitRequest("login");
+            final var jsonResponse = "{" +
+                    "    \"flow_id\": \"flowId\"," +
+                    "    \"token\": \"token\"" +
+                    "}";
+            final var typeReference = new TypeReference<AuthResponse>() {};
+            when(mockHttpResponse.getFirstHeader("X-Session-Id")).thenReturn(new MockHeader("X-Session-Id", "sessionId"));
+            when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
+            when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
 
-        when(mockHttpResponse.getFirstHeader("X-Session-Id")).thenReturn(new MockHeader("X-Session-Id", "sessionId"));
-        when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
-        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
+            final var parsedResponse = requestProcessor.postRequest(request, typeReference);
 
-        AuthResponse parsedResponse = requestProcessor.postRequest(request, typeReference);
-
-        assertEquals("flowId", parsedResponse.flowId());
-        assertEquals("token", parsedResponse.token());
+            assertThat(parsedResponse.flowId()).isEqualTo("flowId");
+            assertThat(parsedResponse.token()).isEqualTo("token");
+        }
     }
 
     private static class MockHeader implements Header {

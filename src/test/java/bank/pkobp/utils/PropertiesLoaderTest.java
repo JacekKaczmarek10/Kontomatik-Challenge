@@ -9,10 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
-import static org.assertj.core.api.AssertionsForClassTypes.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PropertiesLoaderTest {
@@ -38,8 +41,8 @@ class PropertiesLoaderTest {
         }
 
         @Test
-        void testLoadValidProperties() {
-            final InputStream inputStream = new ByteArrayInputStream(VALID_PROPERTIES.getBytes());
+        void shouldLoadValidProperties() {
+            final var inputStream = new ByteArrayInputStream(VALID_PROPERTIES.getBytes());
             when(mockClassLoader.getResourceAsStream("valid.properties")).thenReturn(inputStream);
 
             final var userCredentials = PropertiesLoader.loadProperties("valid.properties", mockClassLoader);
@@ -50,7 +53,7 @@ class PropertiesLoaderTest {
         }
 
         @Test
-        void testLoadPropertiesFileNotFound() {
+        void shouldHandlePropertiesFileNotFound() {
             when(mockClassLoader.getResourceAsStream("nonexistent.properties")).thenReturn(null);
 
             final var userCredentials = PropertiesLoader.loadProperties("nonexistent.properties", mockClassLoader);
@@ -59,26 +62,24 @@ class PropertiesLoaderTest {
         }
 
         @Test
-        void testLoadPropertiesMissingLogin() {
-            final InputStream inputStream = new ByteArrayInputStream(MISSING_LOGIN_PROPERTIES.getBytes());
+        void shouldThrowExceptionOnMissingLogin() {
+            final var inputStream = new ByteArrayInputStream(MISSING_LOGIN_PROPERTIES.getBytes());
             when(mockClassLoader.getResourceAsStream("missing_login.properties")).thenReturn(inputStream);
 
             assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_login.properties", mockClassLoader))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessage("Login is missing or empty.");
-
             verify(mockClassLoader).getResourceAsStream("missing_login.properties");
         }
 
         @Test
-        void testLoadPropertiesMissingPassword() {
-            final InputStream inputStream = new ByteArrayInputStream(MISSING_PASSWORD_PROPERTIES.getBytes());
+        void shouldThrowExceptionOnMissingPassword() {
+            final var inputStream = new ByteArrayInputStream(MISSING_PASSWORD_PROPERTIES.getBytes());
             when(mockClassLoader.getResourceAsStream("missing_password.properties")).thenReturn(inputStream);
 
             assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_password.properties", mockClassLoader))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessage("Password is missing or empty.");
-
             verify(mockClassLoader).getResourceAsStream("missing_password.properties");
         }
     }
@@ -100,7 +101,7 @@ class PropertiesLoaderTest {
         }
 
         @Test
-        void testValidateProperties_BothPropertiesPresent() {
+        void shouldValidatePropertiesWhenBothPresent() {
             final var validCredentials = new UserCredentials("username", "password");
 
             assertThatCode(() -> PropertiesLoader.validateProperties(validCredentials))
@@ -108,10 +109,11 @@ class PropertiesLoaderTest {
         }
 
         @Test
-        void testValidateProperties_NullCredentials() {
+        void shouldThrowExceptionOnNullCredentials() {
             assertThatThrownBy(() -> PropertiesLoader.validateProperties(null))
                     .isInstanceOf(NullPointerException.class);
-            assertThat(systemOutContent.toString().trim()).isEmpty();
+
+            assertThat(systemOutContent.toString().trim()).isEmpty(); // Ensure no output to System.out
         }
     }
 }

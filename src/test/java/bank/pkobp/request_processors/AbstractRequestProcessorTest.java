@@ -9,12 +9,14 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -43,68 +45,98 @@ class AbstractRequestProcessorTest {
         requestProcessor.setHttpClient(mockHttpClient);
     }
 
-    @Test
-    void testConvertObjectToJson_StringInput() throws JsonProcessingException {
-        String inputString = "test string";
+    @Nested
+    class ConvertObjectToJsonTests {
 
-        String json = requestProcessor.convertObjectToJson(inputString);
+        @Test
+        void shouldConvertStringInputToJson() throws JsonProcessingException {
+            final var inputString = "test string";
 
-        assertEquals("test string", json);
+            final var json = requestProcessor.convertObjectToJson(inputString);
+
+            assertThat(json).isEqualTo("test string");
+        }
+
+        @Test
+        void shouldConvertObjectInputToJson() throws JsonProcessingException {
+            final var jsonString = "{\"key\": \"value\"}";
+
+            final var json = requestProcessor.convertObjectToJson(jsonString);
+
+            assertThat(json).isEqualTo("{\"key\": \"value\"}");
+        }
     }
 
-    @Test
-    void testConvertObjectToJson_ObjectInput() throws JsonProcessingException {
-        String jsonString = "{\"key\": \"value\"}";
+    @Nested
+    class ParseResponseTests {
 
-        String json = requestProcessor.convertObjectToJson(jsonString);
+        @Test
+        void shouldParseJsonResponse() throws JsonProcessingException {
+            final var jsonResponse = "{\"key\": \"value\"}";
+            final var typeReference = new TypeReference<String>() {};
 
-        assertEquals("{\"key\": \"value\"}", json);
+            final var parsedResponse = requestProcessor.parseResponse(jsonResponse, typeReference);
+
+            assertThat(parsedResponse).isEqualTo("{\"key\": \"value\"}");
+        }
     }
 
-    @Test
-    void testParseResponse() throws JsonProcessingException {
-        String jsonResponse = "{\"key\": \"value\"}";
-        TypeReference<String> typeReference = new TypeReference<>() {};
+    @Nested
+    class AddHeaderTests {
 
-        String parsedResponse = requestProcessor.parseResponse(jsonResponse, typeReference);
+        @Test
+        void shouldAddHeader() {
+            final var headerName = "Custom-Header";
+            final var headerValue = "header value";
 
-        assertEquals("{\"key\": \"value\"}", parsedResponse);
+            requestProcessor.addHeader(headerName, headerValue);
+
+            assertThat(requestProcessor.getHeaders()).containsEntry(headerName, headerValue);
+        }
     }
 
-    @Test
-    void testAddHeader() {
-        requestProcessor.addHeader("Custom-Header", "header value");
+    @Nested
+    class SetCommonHeadersTests {
 
-        assertEquals("header value", requestProcessor.getHeaders().get("Custom-Header"));
+        @Test
+        void shouldSetCommonHeaders() {
+            requestProcessor.setCommonHeaders();
+
+            final var headers = requestProcessor.getHeaders();
+
+            assertThat(headers)
+                    .containsEntry(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())
+                    .containsEntry(HttpHeaders.USER_AGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+                    .containsEntry(HttpHeaders.ACCEPT, "*/*")
+                    .containsEntry("Accept-Encoding", "gzip, deflate, br")
+                    .containsEntry(HttpHeaders.CONNECTION, "keep-alive");
+        }
     }
 
-    @Test
-    void testSetCommonHeaders() {
-        requestProcessor.setCommonHeaders();
+    @Nested
+    class PostRequestTests {
 
-        assertEquals(ContentType.APPLICATION_JSON.toString(), requestProcessor.getHeaders().get(HttpHeaders.CONTENT_TYPE));
-        assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-                              requestProcessor.getHeaders().get(HttpHeaders.USER_AGENT));
-        assertEquals("*/*", requestProcessor.getHeaders().get(HttpHeaders.ACCEPT));
-        assertEquals("gzip, deflate, br", requestProcessor.getHeaders().get("Accept-Encoding"));
-        assertEquals("keep-alive", requestProcessor.getHeaders().get(HttpHeaders.CONNECTION));
+        @Test
+        void shouldPostRequestAndReturnResponse() throws IOException, RequestProcessingException {
+            when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
+            when(mockHttpResponse.getEntity()).thenReturn(new StringEntity("{\"response\": \"success\"}"));
+            final var request = "test request";
+            final var responseType = new TypeReference<String>() {};
+
+            final var response = requestProcessor.postRequest(request, responseType);
+
+            assertThat(response).isEqualTo("{\"response\": \"success\"}");
+        }
     }
 
-    @Test
-    void testPostRequest() throws IOException, RequestProcessingException {
-        when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.getEntity()).thenReturn(new StringEntity("{\"response\": \"success\"}"));
+    @Nested
+    class ProcessRawResponseTests {
 
-        String request = "test request";
-        TypeReference<String> responseType = new TypeReference<>() {};
+        @Test
+        void shouldNotThrowExceptionWhenProcessingRawResponse() {
 
-        String response = requestProcessor.postRequest(request, responseType);
-
-        assertEquals("{\"response\": \"success\"}", response);
-    }
-
-    @Test
-    void testProcessRawResponse() {
-        assertDoesNotThrow(() -> requestProcessor.processRawResponse(mockHttpResponse));
+            assertThatCode(() -> requestProcessor.processRawResponse(mockHttpResponse))
+                    .doesNotThrowAnyException();
+        }
     }
 }
