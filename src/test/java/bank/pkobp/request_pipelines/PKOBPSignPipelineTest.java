@@ -59,6 +59,29 @@ class PKOBPSignPipelineTest {
     }
 
     @Test
+    void testExecutePipeline() throws IOException, RequestProcessingException {
+        AuthResponse mockLoginResponse = new AuthResponse("mockLoginToken", "flowId");
+        AuthResponse mockPasswordResponse = new AuthResponse("mockPasswordToken", "flowId");
+        List<Account> mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
+        String mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
+
+        when(mockLoginProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
+        when(mockPasswordProcessor.postRequest(any(), any())).thenReturn(mockPasswordResponse);
+        when(mockOtpProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
+        when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
+        when(mockReader.readLine()).thenReturn("123456");
+
+        List<Account> result = signPipeline.executePipeline();
+
+        assertEquals(mockAccounts, result);
+        verify(mockLoginProcessor, times(1)).postRequest(any(), any());
+        verify(mockPasswordProcessor, times(1)).postRequest(any(), any());
+        verify(mockOtpProcessor, times(1)).postRequest(any(), any());
+        verify(mockAccountsProcessor, times(1)).postRequest(any(), any());
+        verify(mockReader, times(1)).readLine();
+    }
+
+    @Test
     void testReadOTPFromUser() throws IOException {
         when(mockReader.readLine()).thenReturn("123456\n");
 
@@ -118,26 +141,4 @@ class PKOBPSignPipelineTest {
         verify(mockAccountsProcessor, times(1)).postRequest(eq(mockJson), any());
     }
 
-    @Test
-    void testExecutePipeline() throws IOException, RequestProcessingException {
-        AuthResponse mockLoginResponse = new AuthResponse("mockLoginToken", "flowId");
-        AuthResponse mockPasswordResponse = new AuthResponse("mockPasswordToken", "flowId");
-        List<Account> mockAccounts = Collections.singletonList(new Account("Savings", "1000.0"));
-        String mockJson = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
-
-        when(mockLoginProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
-        when(mockPasswordProcessor.postRequest(any(), any())).thenReturn(mockPasswordResponse);
-        when(mockOtpProcessor.postRequest(any(), any())).thenReturn(mockLoginResponse);
-        when(mockAccountsProcessor.postRequest(eq(mockJson), any())).thenReturn(mockAccounts);
-        when(mockReader.readLine()).thenReturn("123456");
-
-        List<Account> result = signPipeline.executePipeline();
-
-        assertEquals(mockAccounts, result);
-        verify(mockLoginProcessor, times(1)).postRequest(any(), any());
-        verify(mockPasswordProcessor, times(1)).postRequest(any(), any());
-        verify(mockOtpProcessor, times(1)).postRequest(any(), any());
-        verify(mockAccountsProcessor, times(1)).postRequest(any(), any());
-        verify(mockReader, times(1)).readLine();
-    }
 }

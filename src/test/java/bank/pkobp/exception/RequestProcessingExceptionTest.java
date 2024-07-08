@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class RequestProcessingExceptionTest {
 
     @Test
-    void testRequestProcessingException() {
+    void shouldThrowRequestProcessingException() {
 
-        RequestProcessingException exception = assertThrows(RequestProcessingException.class, () -> {
+        final var exception = assertThrows(RequestProcessingException.class, () -> {
             throw new RequestProcessingException("Request processing failed");
         });
 
