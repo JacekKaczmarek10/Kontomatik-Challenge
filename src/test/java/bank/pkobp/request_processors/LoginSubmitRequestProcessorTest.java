@@ -2,6 +2,7 @@ package bank.pkobp.request_processors;
 
 import bank.pkobp.entity.request.LoginSubmitRequest;
 import bank.pkobp.entity.response.AuthResponse;
+import bank.pkobp.exception.InvalidCredentialsException;
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.http.Header;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +43,14 @@ class LoginSubmitRequestProcessorTest {
     }
 
     @Test
+    void testProcessRawResponse_NullResponse() {
+        LoginSubmitRequestProcessor processor = new LoginSubmitRequestProcessor();
+
+        assertThrows(InvalidCredentialsException.class, () ->
+                processor.processRawResponse(null));
+    }
+
+    @Test
     void testPostRequest() throws IOException, RequestProcessingException {
         LoginSubmitRequest request = new LoginSubmitRequest("login");
 
@@ -51,10 +61,7 @@ class LoginSubmitRequestProcessorTest {
         TypeReference<AuthResponse> typeReference = new TypeReference<>() {};
 
         when(mockHttpResponse.getFirstHeader("X-Session-Id")).thenReturn(new MockHeader("X-Session-Id", "sessionId"));
-
-        // Mocking HTTP response entity
         when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
-
         when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
 
         AuthResponse parsedResponse = requestProcessor.postRequest(request, typeReference);

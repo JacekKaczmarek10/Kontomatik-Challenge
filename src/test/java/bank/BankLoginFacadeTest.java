@@ -52,10 +52,4 @@ class BankLoginFacadeTest {
         }
 
     }
-
-    @Nested
-    class PerformLoginAndGetAccountDataTest {
-
-    }
-
 }

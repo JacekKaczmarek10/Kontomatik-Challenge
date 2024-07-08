@@ -44,6 +44,8 @@ public class PekaoBankService implements BankService {
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
             login(maskedPassword);
+        }else{
+            log.error("Incorrect password mask");
         }
     }
 

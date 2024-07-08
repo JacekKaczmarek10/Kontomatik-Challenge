@@ -1,14 +1,12 @@
 package bank;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import java.io.IOException;
 import java.io.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class BankApplicationTest {
 
@@ -18,55 +16,94 @@ class BankApplicationTest {
     private ByteArrayInputStream testIn;
     private ByteArrayOutputStream testOut;
 
+    @Mock
+    private BankLoginFacade mockBankLoginFacade;
+
     @BeforeEach
-    public void setUpOutput() {
+    void setup() {
+        MockitoAnnotations.openMocks(this);
         testOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(testOut));
     }
 
     @AfterEach
-    public void restoreSystemInputOutput() {
+    void restoreSystemInputOutput() {
         System.setIn(systemIn);
         System.setOut(systemOut);
     }
 
     @Nested
-    @Disabled
+    class StartTest{
+        @Test
+        void testWithPKOBPChoice() {
+            String simulatedInput = "PKO BP\n";
+            testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+            System.setIn(testIn);
+
+            BankApplication bankApplication = new BankApplication(mockBankLoginFacade);
+            bankApplication.start();
+
+            verify(mockBankLoginFacade, times(1)).determineBankType("PKO BP");
+            assertTrue(testOut.toString().contains("Choose your bank (PKO BP or PEKAO):"));
+        }
+
+        @Test
+        void testWithPEKAOChoice() {
+            String simulatedInput = "PEKAO\n";
+            testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+            System.setIn(testIn);
+
+            BankApplication bankApplication = new BankApplication(mockBankLoginFacade);
+            bankApplication.start();
+
+            verify(mockBankLoginFacade, times(1)).determineBankType("PEKAO");
+            assertTrue(testOut.toString().contains("Choose your bank (PKO BP or PEKAO):"));
+        }
+
+        @Test
+        void testWithInvalidChoice() {
+            String simulatedInput = "InvalidBank\n";
+            testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+            System.setIn(testIn);
+
+            BankApplication bankApplication = new BankApplication(mockBankLoginFacade);
+            bankApplication.start();
+
+            verify(mockBankLoginFacade, never()).performLoginAndGetAccountData(any(), anyString());
+            assertTrue(testOut.toString().contains("Choose your bank (PKO BP or PEKAO):"));
+        }
+
+        @Test
+        void testIOException() {
+            String simulatedInput = "PEKAO\n";
+            testIn = new ByteArrayInputStream(simulatedInput.getBytes());
+            System.setIn(new InputStreamThrowingIOException());
+
+            BankApplication bankApplication = new BankApplication(mockBankLoginFacade);
+            bankApplication.start();
+            verify(mockBankLoginFacade, never()).determineBankType(anyString());
+            assertTrue(testOut.toString().contains("Choose your bank (PKO BP or PEKAO):"));
+        }
+
+        private static class InputStreamThrowingIOException extends InputStream {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("IO Exception");
+            }
+        }
+    }
+
+    @Nested
     class MainTest {
 
         @Test
-        void shouldBankApplicationWithValidInputPKOBP() {
-            testIn = new ByteArrayInputStream("PKO BP\n".getBytes());
+        void testStarted() {
+            String simulatedInput = "\n";
+            testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(testIn);
-            BankApplication.main(new String[]{});
 
-            final var output = testOut.toString();
-
-            assertThat(output).contains("START LOG IN PROCESS FOR PKO BP");
-            assertThat(output).contains("FINISH LOG IN PROCESS FOR PKO BP");
-        }
-
-        @Test
-        void shouldBankApplicationWithValidInputPEKAO() {
-            testIn = new ByteArrayInputStream("PEKAO\n".getBytes());
-            System.setIn(testIn);
-            BankApplication.main(new String[]{});
-
-            final var output = testOut.toString();
-
-            assertThat(output).contains("START LOG IN PROCESS FOR PEKAO");
-            assertThat(output).contains("FINISH LOG IN PROCESS FOR PEKAO");
-        }
-
-        @Test
-        void shouldBankApplicationWithInvalidInput() {
-            testIn = new ByteArrayInputStream("InvalidBank\n".getBytes());
-            System.setIn(testIn);
-            BankApplication.main(new String[]{});
-
-            final var output = testOut.toString();
-
-            assertThat(output).contains("Invalid bank choice: INVALIDBANK");
+            assertDoesNotThrow(() -> BankApplication.main(new String[]{}));
+            assertTrue(testOut.toString().contains("Choose your bank (PKO BP or PEKAO):"));
         }
     }
 }

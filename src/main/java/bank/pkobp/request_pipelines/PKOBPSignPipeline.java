@@ -12,18 +12,30 @@ import bank.pkobp.request_processors.LoginSubmitRequestProcessor;
 import bank.pkobp.request_processors.OTPSubmitRequestProcessor;
 import bank.pkobp.request_processors.PasswordSubmitRequestProcessor;
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Setter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+@Setter
 public class PKOBPSignPipeline {
 
-    private final UserCredentials userCredentials;
+    private UserCredentials userCredentials;
+    private LoginSubmitRequestProcessor loginSubmitRequestProcessor;
+    private PasswordSubmitRequestProcessor passwordSubmitRequestProcessor;
+    private OTPSubmitRequestProcessor otpSubmitRequestProcessor;
+    private GetAccountsInfoRequestProcessor getAccountsInfoRequestProcessor;
+    private BufferedReader otpReader;
 
-    public PKOBPSignPipeline(UserCredentials userCredentials){
+    public PKOBPSignPipeline(UserCredentials userCredentials) {
         this.userCredentials = userCredentials;
+        this.loginSubmitRequestProcessor = new LoginSubmitRequestProcessor();
+        this.passwordSubmitRequestProcessor = new PasswordSubmitRequestProcessor();
+        this.otpSubmitRequestProcessor = new OTPSubmitRequestProcessor();
+        this.getAccountsInfoRequestProcessor = new GetAccountsInfoRequestProcessor();
+        this.otpReader = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public List<Account> executePipeline() throws IOException, RequestProcessingException {
@@ -35,31 +47,26 @@ public class PKOBPSignPipeline {
 
     String readOTPFromUser() throws IOException {
         System.out.print("Enter the one-time password sent to you via SMS: ");
-        final var reader = new BufferedReader(new InputStreamReader(System.in));
-        return reader.readLine().trim();
+        return otpReader.readLine().trim();
     }
 
     AuthResponse loginRequest() throws IOException, RequestProcessingException {
         final var loginSubmitRequest = new LoginSubmitRequest(userCredentials.login());
-        final var loginSubmitRequestProcessor = new LoginSubmitRequestProcessor();
         return loginSubmitRequestProcessor.postRequest(loginSubmitRequest, new TypeReference<>() {});
     }
 
     AuthResponse passwordRequest(AuthResponse authResponse) throws IOException, RequestProcessingException {
         final var loginRequest = new PasswordSubmitRequest(authResponse, userCredentials.password());
-        final var passwordSubmitRequestProcessor = new PasswordSubmitRequestProcessor();
         return passwordSubmitRequestProcessor.postRequest(loginRequest, new TypeReference<>() {});
     }
 
     void otpRequest(String otp, AuthResponse authResponse) throws IOException, RequestProcessingException {
         final var loginRequest = new OTPSubmitRequest(authResponse, otp);
-        final var otpSubmitRequestProcessor = new OTPSubmitRequestProcessor();
         otpSubmitRequestProcessor.postRequest(loginRequest, new TypeReference<>() {});
     }
 
     List<Account> accountDataRequest() throws IOException, RequestProcessingException {
         final var json = "{\"version\":3,\"seq\":9,\"location\":\"\",\"data\":{\"accounts\":{}}}";
-        final var getAccountsInfoRequestProcessor = new GetAccountsInfoRequestProcessor();
         return getAccountsInfoRequestProcessor.postRequest(json, new TypeReference<>() {});
     }
 }

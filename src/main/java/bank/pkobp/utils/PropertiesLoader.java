@@ -42,7 +42,7 @@ public class PropertiesLoader {
         return null;
     }
 
-    private static void validateProperties(UserCredentials userCredentials) {
+    static void validateProperties(UserCredentials userCredentials) {
         if (userCredentials.login().isEmpty()) {
             log.info("Username is missing or empty in the properties file.");
         }

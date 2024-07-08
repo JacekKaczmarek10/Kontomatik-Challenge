@@ -36,7 +36,7 @@ class AbstractRequestProcessorTest {
         requestProcessor = new AbstractRequestProcessor<>() {
             @Override
             protected String getUrl() {
-                return "http://example.com/api";
+                return "https://example.com/api";
             }
 
             @Override
@@ -93,7 +93,6 @@ class AbstractRequestProcessorTest {
 
     @Test
     void testPostRequest() throws IOException, RequestProcessingException {
-        // Mocking behavior for HttpClient and HttpResponse
         when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
         when(mockHttpResponse.getEntity()).thenReturn(new StringEntity("{\"response\": \"success\"}"));
 

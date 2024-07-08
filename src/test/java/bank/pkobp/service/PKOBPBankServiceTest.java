@@ -1,13 +1,8 @@
 package bank.pkobp.service;
 
-import bank.pkobp.entity.Account;
-import bank.pkobp.entity.UserCredentials;
 import bank.pkobp.exception.RequestProcessingException;
-import bank.pkobp.request_pipelines.PKOBPSignPipeline;
 import bank.pkobp.utils.AccountResponsePrinter;
 import bank.pkobp.utils.PropertiesLoader;
-import java.io.BufferedReader;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,13 +19,6 @@ class PKOBPBankServiceTest {
     @InjectMocks
     private PKOBPBankService pkobpBankService;
 
-    private UserCredentials userCredentials;
-
-    @BeforeEach
-    void setUp() {
-        userCredentials = new UserCredentials("username", "password");
-    }
-
     @Nested
     class LoginAndGetAccountDataTest {
 
@@ -46,8 +34,5 @@ class PKOBPBankServiceTest {
                 }
             }
         }
-
     }
-
-
 }
