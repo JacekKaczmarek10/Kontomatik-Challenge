@@ -16,7 +16,7 @@
 - A solution was provided that allows you to log in to the bank and display your account balance
 
 ## Technologies Used
-- Tech 1 - version 1.0
+- Java - version 21
 
 ## Features
 List the ready features here:
