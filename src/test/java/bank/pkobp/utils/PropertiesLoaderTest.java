@@ -1,15 +1,5 @@
 package bank.pkobp.utils;
 
-import bank.pkobp.entity.UserCredentials;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,21 +7,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import bank.pkobp.entity.UserCredentials;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 @ExtendWith(MockitoExtension.class)
 class PropertiesLoaderTest {
 
     @Nested
     class LoadPropertiesTests {
 
-        private static final String VALID_PROPERTIES =
-                "login=testUser\n" +
-                        "password=testPassword";
+        private static final String VALID_PROPERTIES = "login=testUser\n" + "password=testPassword";
 
-        private static final String MISSING_LOGIN_PROPERTIES =
-                "password=testPassword";
+        private static final String MISSING_LOGIN_PROPERTIES = "password=testPassword";
 
-        private static final String MISSING_PASSWORD_PROPERTIES =
-                "login=testUser";
+        private static final String MISSING_PASSWORD_PROPERTIES = "login=testUser";
 
         private ClassLoader mockClassLoader;
 
@@ -66,9 +63,8 @@ class PropertiesLoaderTest {
             final var inputStream = new ByteArrayInputStream(MISSING_LOGIN_PROPERTIES.getBytes());
             when(mockClassLoader.getResourceAsStream("missing_login.properties")).thenReturn(inputStream);
 
-            assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_login.properties", mockClassLoader))
-                    .isInstanceOf(NullPointerException.class)
-                    .hasMessage("Login is missing or empty.");
+            assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_login.properties", mockClassLoader)).isInstanceOf(
+                NullPointerException.class).hasMessage("Login is missing or empty.");
             verify(mockClassLoader).getResourceAsStream("missing_login.properties");
         }
 
@@ -77,9 +73,9 @@ class PropertiesLoaderTest {
             final var inputStream = new ByteArrayInputStream(MISSING_PASSWORD_PROPERTIES.getBytes());
             when(mockClassLoader.getResourceAsStream("missing_password.properties")).thenReturn(inputStream);
 
-            assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_password.properties", mockClassLoader))
-                    .isInstanceOf(NullPointerException.class)
-                    .hasMessage("Password is missing or empty.");
+            assertThatThrownBy(() -> PropertiesLoader.loadProperties("missing_password.properties",
+                                                                     mockClassLoader)).isInstanceOf(NullPointerException.class)
+                .hasMessage("Password is missing or empty.");
             verify(mockClassLoader).getResourceAsStream("missing_password.properties");
         }
     }
@@ -104,14 +100,12 @@ class PropertiesLoaderTest {
         void shouldValidatePropertiesWhenBothPresent() {
             final var validCredentials = new UserCredentials("username", "password");
 
-            assertThatCode(() -> PropertiesLoader.validateProperties(validCredentials))
-                    .doesNotThrowAnyException();
+            assertThatCode(() -> PropertiesLoader.validateProperties(validCredentials)).doesNotThrowAnyException();
         }
 
         @Test
         void shouldThrowExceptionOnNullCredentials() {
-            assertThatThrownBy(() -> PropertiesLoader.validateProperties(null))
-                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> PropertiesLoader.validateProperties(null)).isInstanceOf(NullPointerException.class);
 
             assertThat(systemOutContent.toString().trim()).isEmpty(); // Ensure no output to System.out
         }

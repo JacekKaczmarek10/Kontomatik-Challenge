@@ -1,8 +1,14 @@
 package bank.pkobp.request_processors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -14,11 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.io.IOException;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AbstractRequestProcessorTest {
@@ -40,7 +41,8 @@ class AbstractRequestProcessorTest {
             }
 
             @Override
-            protected void setSpecificHeaders() {}
+            protected void setSpecificHeaders() {
+            }
         };
         requestProcessor.setHttpClient(mockHttpClient);
     }
@@ -73,7 +75,8 @@ class AbstractRequestProcessorTest {
         @Test
         void shouldParseJsonResponse() throws JsonProcessingException {
             final var jsonResponse = "{\"key\": \"value\"}";
-            final var typeReference = new TypeReference<String>() {};
+            final var typeReference = new TypeReference<String>() {
+            };
 
             final var parsedResponse = requestProcessor.parseResponse(jsonResponse, typeReference);
 
@@ -104,12 +107,12 @@ class AbstractRequestProcessorTest {
 
             final var headers = requestProcessor.getHeaders();
 
-            assertThat(headers)
-                    .containsEntry(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())
-                    .containsEntry(HttpHeaders.USER_AGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-                    .containsEntry(HttpHeaders.ACCEPT, "*/*")
-                    .containsEntry("Accept-Encoding", "gzip, deflate, br")
-                    .containsEntry(HttpHeaders.CONNECTION, "keep-alive");
+            assertThat(headers).containsEntry(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())
+                .containsEntry(HttpHeaders.USER_AGENT,
+                               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+                .containsEntry(HttpHeaders.ACCEPT, "*/*")
+                .containsEntry("Accept-Encoding", "gzip, deflate, br")
+                .containsEntry(HttpHeaders.CONNECTION, "keep-alive");
         }
     }
 
@@ -121,7 +124,8 @@ class AbstractRequestProcessorTest {
             when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
             when(mockHttpResponse.getEntity()).thenReturn(new StringEntity("{\"response\": \"success\"}"));
             final var request = "test request";
-            final var responseType = new TypeReference<String>() {};
+            final var responseType = new TypeReference<String>() {
+            };
 
             final var response = requestProcessor.postRequest(request, responseType);
 
@@ -135,8 +139,7 @@ class AbstractRequestProcessorTest {
         @Test
         void shouldNotThrowExceptionWhenProcessingRawResponse() {
 
-            assertThatCode(() -> requestProcessor.processRawResponse(mockHttpResponse))
-                    .doesNotThrowAnyException();
+            assertThatCode(() -> requestProcessor.processRawResponse(mockHttpResponse)).doesNotThrowAnyException();
         }
     }
 }

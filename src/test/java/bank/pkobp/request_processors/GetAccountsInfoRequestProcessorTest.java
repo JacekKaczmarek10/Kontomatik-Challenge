@@ -1,11 +1,17 @@
 package bank.pkobp.request_processors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import bank.pkobp.context.SessionContext;
 import bank.pkobp.entity.Account;
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.List;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -15,13 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GetAccountsInfoRequestProcessorTest {
@@ -65,7 +64,8 @@ class GetAccountsInfoRequestProcessorTest {
         void shouldPostRequestAndReturnResponse() throws IOException, RequestProcessingException {
             final var requestObject = "{\"some\": \"request\"}";
             final var jsonResponse = "{\"response\": {\"data\": {\"accounts\": [{\"name\": \"name\", \"balance\": 100.0}]}}}";
-            final var typeReference = new TypeReference<List<Account>>() {};
+            final var typeReference = new TypeReference<List<Account>>() {
+            };
             when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
             when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
 

@@ -1,19 +1,17 @@
 package bank.pkobp.utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import bank.pkobp.entity.Account;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class AccountResponsePrinterTest {
@@ -30,25 +28,21 @@ class AccountResponsePrinterTest {
 
         @Test
         void shouldPrintDetailsForNormalList() {
-            List<Account> accounts = Arrays.asList(
-                    new Account("John Doe", "1000.00"),
-                    new Account("Jane Smith", "2500.50")
-            );
+            final var accounts = Arrays.asList(new Account("John Doe", "1000.00"), new Account("Jane Smith", "2500.50"));
 
             AccountResponsePrinter.displayAccountDetails(accounts);
 
             String printedOutput = outContent.toString();
-            assertThat(printedOutput)
-                    .contains("List accounts:")
-                    .contains("Name: John Doe")
-                    .contains("Balance: 1000.00")
-                    .contains("Name: Jane Smith")
-                    .contains("Balance: 2500.50");
+            assertThat(printedOutput).contains("List accounts:")
+                .contains("Name: John Doe")
+                .contains("Balance: 1000.00")
+                .contains("Name: Jane Smith")
+                .contains("Balance: 2500.50");
         }
 
         @Test
         void shouldPrintNoAccountsFoundForEmptyList() {
-            List<Account> accounts = Collections.emptyList();
+            final var accounts = new ArrayList<Account>();
 
             AccountResponsePrinter.displayAccountDetails(accounts);
 

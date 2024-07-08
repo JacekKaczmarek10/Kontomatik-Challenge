@@ -1,9 +1,14 @@
 package bank.pkobp.request_processors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import bank.pkobp.entity.request.OTPSubmitRequest;
 import bank.pkobp.entity.response.AuthResponse;
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -13,12 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OTPSubmitRequestProcessorTest {
@@ -43,19 +42,12 @@ class OTPSubmitRequestProcessorTest {
         @Test
         void shouldReturnParsedResponse() throws IOException, RequestProcessingException {
             final var request = new OTPSubmitRequest(new AuthResponse("token", "flowId"), "otp");
-            final var jsonResponse = "{" +
-                    "    \"state_id\": \"END\"," +
-                    "    \"httpStatus\": 200,\n" +
-                    "    \"flow_id\": \"flowId\"," +
-                    "    \"token\": \"token\"," +
-                    "    \"finished\": true," +
-                    "    \"response\": {" +
-                    "        \"data\": {" +
-                    "            \"login_type\": \"NORMAL\"" +
-                    "        }" +
-                    "    }" +
-                    "}";
-            final var typeReference = new TypeReference<AuthResponse>() {};
+            final var jsonResponse =
+                "{" + "    \"state_id\": \"END\"," + "    \"httpStatus\": 200,\n" + "    \"flow_id\": \"flowId\","
+                    + "    \"token\": \"token\"," + "    \"finished\": true," + "    \"response\": {" + "        \"data\": {"
+                    + "            \"login_type\": \"NORMAL\"" + "        }" + "    }" + "}";
+            final var typeReference = new TypeReference<AuthResponse>() {
+            };
             when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
             when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(jsonResponse));
 
