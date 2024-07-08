@@ -4,7 +4,6 @@ import bank.pkobp.context.SessionContext;
 import bank.pkobp.entity.request.PasswordSubmitRequest;
 import bank.pkobp.entity.response.AuthResponse;
 import bank.pkobp.exception.InvalidCredentialsException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -30,8 +29,8 @@ public class PasswordSubmitRequestProcessor extends AbstractRequestProcessor<Pas
         final var objectMapper = new ObjectMapper();
         final var jsonNode = objectMapper.readTree(jsonResponse);
 
-        JsonNode errorsNode = jsonNode.get("response").get("fields").get("errors");
-        String str = errorsNode.asText();
+        final var errorsNode = jsonNode.get("response").get("fields").get("errors");
+        final var str = errorsNode.asText();
         if (!"null".equals(str)) {
             throw new InvalidCredentialsException("Invalid user password");
         }
