@@ -1,18 +1,17 @@
 package bank;
 
 import bank.pekao.PekaoBankService;
-import bank.pkobp.exception.RequestProcessingException;
 import bank.pkobp.service.BankService;
 import bank.pkobp.service.PKOBPBankService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,37 +19,36 @@ class BankLoginFacadeTest {
 
     @InjectMocks
     @Spy
-    private BankLoginFacade facade;
+    private BankLoginFacade bankLoginFacade;
 
     @Nested
-    @Disabled
-    class LoginAndGetAccountData {
+    class DetermineBankTypeTest {
 
         @Test
-        void shouldLoginAndGetAccountData_PKOBP() throws RequestProcessingException, IOException {
-            BankService mockBankService = Mockito.mock(PKOBPBankService.class);
+        void shouldDetermineBankTypePKOBP() {
+            final var captor = ArgumentCaptor.forClass(BankService.class);
 
-            Logger mockLogger = Mockito.mock(Logger.class);
-            facade.loginAndGetAccountData("PKO BP");
+            bankLoginFacade.determineBankType("PKO BP");
 
-            verify(mockBankService, times(1)).loginAndGetAccountData();
-
-            verify(mockLogger, times(1)).info("START LOG IN PROCESS FOR PKO BP");
-            verify(mockLogger, times(1)).info("FINISH LOG IN PROCESS FOR PKO BP");
+            verify(bankLoginFacade).performLoginAndGetAccountData(captor.capture(), eq("PKO BP"));
+            assertThat(captor.getValue()).isInstanceOf(PKOBPBankService.class);
         }
 
         @Test
-        @Disabled
-        void shouldLoginAndGetAccountData_PEKAO() {
-            BankService mockBankService = Mockito.mock(PekaoBankService.class);
+        void shouldDetermineBankTypePEKAO() {
+            final var captor = ArgumentCaptor.forClass(BankService.class);
 
-            Logger mockLogger = Mockito.mock(Logger.class);
-            facade.loginAndGetAccountData("PEKAO");
+            bankLoginFacade.determineBankType("PEKAO");
 
-            verify(mockLogger, times(1)).info("START LOG IN PROCESS FOR PEKAO");
-            verify(mockLogger, times(1)).info("FINISH LOG IN PROCESS FOR PEKAO");
+            verify(bankLoginFacade).performLoginAndGetAccountData(captor.capture(), eq("PEKAO"));
+            assertThat(captor.getValue()).isInstanceOf(PekaoBankService.class);
         }
 
+        @Test
+        void shouldDetermineBankTypeInvalid() {
+            bankLoginFacade.determineBankType("INVALID");
+
+            verify(bankLoginFacade, never()).performLoginAndGetAccountData(any(BankService.class), anyString());
+        }
     }
-
 }

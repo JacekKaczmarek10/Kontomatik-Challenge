@@ -4,7 +4,7 @@ import bank.pkobp.context.SessionContext;
 import bank.pkobp.entity.request.LoginSubmitRequest;
 import bank.pkobp.entity.response.AuthResponse;
 import bank.pkobp.exception.InvalidCredentialsException;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 
 public class LoginSubmitRequestProcessor extends AbstractRequestProcessor<LoginSubmitRequest, AuthResponse> {
 

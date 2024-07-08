@@ -2,8 +2,8 @@ package bank.pekao;
 
 import bank.pkobp.entity.UserCredentials;
 import bank.pkobp.utils.PropertiesLoader;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +15,7 @@ import org.mockito.*;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -23,7 +24,7 @@ public class PekaoBankServiceTest {
 
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     private final PrintStream originalErr = System.err;
-    private final Gson gson = new Gson();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks
     @Spy
@@ -153,8 +154,8 @@ public class PekaoBankServiceTest {
 
             final var passwordMask = callService();
 
-            final var jsonObject = gson.fromJson(passwordMask, JsonObject.class);
-            assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
+            JsonNode jsonObject = assertDoesNotThrow(() -> objectMapper.readTree(passwordMask));
+            assertThat(jsonObject.get("customer").asText()).isEqualTo("test");
         }
 
         private String callService() {
@@ -166,13 +167,13 @@ public class PekaoBankServiceTest {
     class ParsePasswordMaskTest {
 
         @Test
-        void shouldReturnPasswordMask() {
+        void shouldReturnPasswordMask() throws IOException {
             final var result = callService();
 
             assertThat(result).isEqualTo("test");
         }
 
-        private String callService() {
+        private String callService() throws IOException {
             return pekaoBankService.parsePasswordMask("{\"passwordMask\":\"test\"}");
         }
     }
@@ -231,9 +232,11 @@ public class PekaoBankServiceTest {
 
             final var result = callService();
 
-            final var jsonObject = gson.fromJson(result, JsonObject.class);
-            assertThat(jsonObject.get("customer").getAsString()).isEqualTo("test");
-            assertThat(jsonObject.get("password").getAsString()).isEqualTo("test");
+            assertDoesNotThrow(() -> {
+                JsonNode jsonObject = objectMapper.readTree(result);
+                assertThat(jsonObject.get("customer").asText()).isEqualTo("test");
+                assertThat(jsonObject.get("password").asText()).isEqualTo("test");
+            });
         }
 
         private String callService() {

@@ -3,19 +3,17 @@ package bank.pkobp.request_processors;
 import bank.pkobp.exception.RequestProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -36,7 +34,7 @@ class AbstractRequestProcessorTest {
         requestProcessor = new AbstractRequestProcessor<>() {
             @Override
             protected String getUrl() {
-                return "http://example.com/api";
+                return "https://example.com/api";
             }
 
             @Override
@@ -84,8 +82,9 @@ class AbstractRequestProcessorTest {
     void testSetCommonHeaders() {
         requestProcessor.setCommonHeaders();
 
-        assertEquals(MediaType.APPLICATION_JSON, requestProcessor.getHeaders().get(HttpHeaders.CONTENT_TYPE));
-        assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36", requestProcessor.getHeaders().get(HttpHeaders.USER_AGENT));
+        assertEquals(ContentType.APPLICATION_JSON.toString(), requestProcessor.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                              requestProcessor.getHeaders().get(HttpHeaders.USER_AGENT));
         assertEquals("*/*", requestProcessor.getHeaders().get(HttpHeaders.ACCEPT));
         assertEquals("gzip, deflate, br", requestProcessor.getHeaders().get("Accept-Encoding"));
         assertEquals("keep-alive", requestProcessor.getHeaders().get(HttpHeaders.CONNECTION));
@@ -93,7 +92,6 @@ class AbstractRequestProcessorTest {
 
     @Test
     void testPostRequest() throws IOException, RequestProcessingException {
-        // Mocking behavior for HttpClient and HttpResponse
         when(mockHttpClient.execute(any())).thenReturn(mockHttpResponse);
         when(mockHttpResponse.getEntity()).thenReturn(new StringEntity("{\"response\": \"success\"}"));
 

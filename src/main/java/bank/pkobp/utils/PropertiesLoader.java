@@ -2,7 +2,6 @@ package bank.pkobp.utils;
 
 import bank.pkobp.entity.UserCredentials;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Objects;
@@ -42,7 +41,7 @@ public class PropertiesLoader {
         return null;
     }
 
-    private static void validateProperties(UserCredentials userCredentials) {
+    static void validateProperties(UserCredentials userCredentials) {
         if (userCredentials.login().isEmpty()) {
             log.info("Username is missing or empty in the properties file.");
         }

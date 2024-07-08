@@ -46,19 +46,15 @@ class AccountResponsePrinterTest {
 
         AccountResponsePrinter.displayAccountDetails(accounts);
 
-        String printedOutput = outContent.toString();
-
-        assertTrue(printedOutput.contains("List accounts:"));
-        assertTrue(printedOutput.contains("No accounts found"));
+        assertTrue(outContent.toString().contains("List accounts:"));
+        assertTrue(outContent.toString().contains("No accounts found"));
     }
 
     @Test
     void testDisplayAccountDetailsWithNullList() {
         AccountResponsePrinter.displayAccountDetails(null);
 
-        String printedOutput = outContent.toString();
-
-        assertTrue(printedOutput.contains("List accounts:"));
-        assertTrue(printedOutput.contains("No accounts found"));
+        assertTrue(outContent.toString().contains("List accounts:"));
+        assertTrue(outContent.toString().contains("No accounts found"));
     }
 }

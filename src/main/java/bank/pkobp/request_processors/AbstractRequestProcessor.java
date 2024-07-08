@@ -6,20 +6,25 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import javax.ws.rs.core.MediaType;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractRequestProcessor<R, S> {
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractRequestProcessor.class);
     @Getter
     private final Map<String, String> headers;
     @Setter
@@ -39,9 +44,9 @@ public abstract class AbstractRequestProcessor<R, S> {
     protected abstract void setSpecificHeaders();
 
     protected void setCommonHeaders(){
-        addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
-        addHeader(HttpHeaders.ACCEPT, MediaType.WILDCARD);
+        addHeader(HttpHeaders.ACCEPT, ContentType.WILDCARD.toString());
         addHeader("Accept-Encoding", "gzip, deflate, br");
         addHeader(HttpHeaders.CONNECTION, "keep-alive");
     }
@@ -72,22 +77,21 @@ public abstract class AbstractRequestProcessor<R, S> {
         setSpecificHeaders();
 
         HttpPost httpPost = new HttpPost(getUrl());
-
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            httpPost.setHeader(entry.getKey(), entry.getValue());
-        }
+        headers.forEach(httpPost::setHeader);
 
         String json = convertObjectToJson(request);
-
-        StringEntity entity = new StringEntity(json);
-        httpPost.setEntity(entity);
+        httpPost.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
 
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
             String rawResponse = EntityUtils.toString(response.getEntity());
             processRawResponse(response);
             return parseResponse(rawResponse, responseType);
+        } catch (IOException | ParseException e) {
+            log.error("Error executing POST request: {}", e.getMessage());
+            throw new RequestProcessingException("Error processing POST request");
         }
     }
+
 
     protected void processRawResponse(CloseableHttpResponse rawResponse) throws RequestProcessingException {}
 }

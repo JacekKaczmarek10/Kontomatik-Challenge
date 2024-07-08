@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class BankLoginFacade {
+
     private static final String PKOBP = "PKO BP";
     private static final String PEKAO = "PEKAO";
 
@@ -22,10 +23,10 @@ public class BankLoginFacade {
         if (bankService == null) {
             return;
         }
-        loginAndGetAccountData(bankService, bankChoice);
+        performLoginAndGetAccountData(bankService, bankChoice);
     }
 
-    private void loginAndGetAccountData(final BankService bankService, final String bankName) {
+    void performLoginAndGetAccountData(final BankService bankService, final String bankName) {
         log.info("START LOG IN PROCESS FOR {}", bankName);
         try {
             bankService.loginAndGetAccountData();

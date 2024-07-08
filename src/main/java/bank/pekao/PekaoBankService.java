@@ -3,21 +3,21 @@ package bank.pekao;
 import bank.pkobp.entity.UserCredentials;
 import bank.pkobp.service.BankService;
 import bank.pkobp.utils.PropertiesLoader;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.commons.io.IOUtils;
-
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class PekaoBankService implements BankService {
@@ -29,13 +29,13 @@ public class PekaoBankService implements BankService {
     private UserCredentials userCredentials;
 
     private final CloseableHttpClient httpClient = HttpClients.createDefault();
-    private final Gson gson = new Gson();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void loginAndGetAccountData() throws IOException {
         userCredentials = PropertiesLoader.loadProperties("pekao-config.properties");
 
-        if (userCredentials == null){
+        if (userCredentials == null) {
             return;
         }
 
@@ -44,6 +44,8 @@ public class PekaoBankService implements BankService {
         if (passwordMaskResponse != null) {
             String maskedPassword = extractMaskedPassword(parsePasswordMask(passwordMaskResponse));
             login(maskedPassword);
+        } else {
+            log.error("Incorrect password mask");
         }
     }
 
@@ -54,7 +56,7 @@ public class PekaoBankService implements BankService {
     String executePostRequest(String url, String json) throws IOException {
         final var postRequest = new HttpPost(url);
         postRequest.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
-        postRequest.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        postRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON);
 
         try (final var response = httpClient.execute(postRequest)) {
             return IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
@@ -62,16 +64,16 @@ public class PekaoBankService implements BankService {
     }
 
     String createPasswordMaskRequestBody() {
-        final var requestBody = new HashMap<>();
+        final var requestBody = new HashMap<String, String>();
         requestBody.put("customer", userCredentials.login());
-        final var passwordMaskRequestBody = gson.toJson(requestBody);
+        String passwordMaskRequestBody = convertMapToJson(requestBody);
         log.info("Password Mask Request: {}", passwordMaskRequestBody);
         return passwordMaskRequestBody;
     }
 
-    String parsePasswordMask(String response) {
-        final var jsonResponse = gson.fromJson(response, JsonObject.class);
-        return jsonResponse.get("passwordMask").getAsString();
+    String parsePasswordMask(String response) throws IOException {
+        JsonNode jsonResponse = objectMapper.readTree(response);
+        return jsonResponse.get("passwordMask").asText();
     }
 
     String extractMaskedPassword(String passwordMask) {
@@ -90,11 +92,20 @@ public class PekaoBankService implements BankService {
     }
 
     String createLoginRequestBody(String maskedPassword) {
-        final var requestBody = new HashMap<>();
+        final var requestBody = new HashMap<String, String>();
         requestBody.put("customer", userCredentials.login());
         requestBody.put("password", maskedPassword);
-        final var loginRequest = gson.toJson(requestBody);
-        log.info("Login Response : {}", loginRequest);
+        String loginRequest = convertMapToJson(requestBody);
+        log.info("Login Response: {}", loginRequest);
         return loginRequest;
+    }
+
+    private String convertMapToJson(Map<String, String> map) {
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (IOException e) {
+            log.error("Error converting map to JSON", e);
+            return "{}";
+        }
     }
 }
