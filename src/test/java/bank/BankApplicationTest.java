@@ -3,12 +3,11 @@ package bank;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.io.IOException;
 import java.io.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -37,9 +36,10 @@ class BankApplicationTest {
     }
 
     @Nested
-    class StartTest{
+    class StartTest {
+
         @Test
-        void testWithPKOBPChoice() {
+        void shouldStartWithPKOBPChoice() {
             final var simulatedInput = "PKO BP\n";
             testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(testIn);
@@ -52,8 +52,8 @@ class BankApplicationTest {
         }
 
         @Test
-        void testWithPEKAOChoice() {
-            final var simulatedInput = "PEKAO\n";
+        void shouldStartWithPEKAOChoice() {
+            String simulatedInput = "PEKAO\n";
             testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(testIn);
             final var bankApplication = new BankApplication(mockBankLoginFacade);
@@ -65,7 +65,7 @@ class BankApplicationTest {
         }
 
         @Test
-        void testWithInvalidChoice() {
+        void shouldStartWithInvalidChoice() {
             final var simulatedInput = "InvalidBank\n";
             testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(testIn);
@@ -78,7 +78,7 @@ class BankApplicationTest {
         }
 
         @Test
-        void testIOException() {
+        void shouldStartIOException() {
             final var simulatedInput = "PEKAO\n";
             testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(new InputStreamThrowingIOException());
@@ -91,6 +91,7 @@ class BankApplicationTest {
         }
 
         private static class InputStreamThrowingIOException extends InputStream {
+
             @Override
             public int read() throws IOException {
                 throw new IOException("IO Exception");
@@ -102,7 +103,7 @@ class BankApplicationTest {
     class MainTest {
 
         @Test
-        void testStarted() {
+        void shouldStart() {
             final var simulatedInput = "\n";
             testIn = new ByteArrayInputStream(simulatedInput.getBytes());
             System.setIn(testIn);

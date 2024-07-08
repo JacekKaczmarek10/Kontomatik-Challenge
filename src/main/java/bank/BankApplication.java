@@ -28,8 +28,8 @@ public class BankApplication {
     }
 
     public static void main(String[] args) {
-        BankLoginFacade bankLoginFacade = new BankLoginFacade();
-        BankApplication bankApplication = new BankApplication(bankLoginFacade);
+        final var bankLoginFacade = new BankLoginFacade();
+        final var bankApplication = new BankApplication(bankLoginFacade);
         bankApplication.start();
     }
 }
